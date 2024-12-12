@@ -308,15 +308,30 @@ class _HomeScreenState extends State<HomeScreen> {
     return BottomNavigationBar(
       currentIndex: _selectedIndex,
       onTap: (index) {
-        setState(() {
-          _selectedIndex = index;
-        });
+        switch (index) {
+          case 0:
+            // Home
+            break;
+          case 1:
+            Navigator.pushNamed(context, '/sermons');
+            break;
+          case 2:
+            Navigator.pushNamed(context, '/bible');
+            break;
+          case 3:
+            Navigator.pushNamed(context, '/notes');
+            break;
+        }
       },
       type: BottomNavigationBarType.fixed,
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
           label: 'Home',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.headphones),
+          label: 'Sermons',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.book),

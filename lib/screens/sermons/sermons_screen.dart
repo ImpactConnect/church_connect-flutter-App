@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import '../../models/sermon.dart';
 import '../../services/database/database_helper.dart';
+import 'category_list_screen.dart';
+import 'preacher_list_screen.dart';
 import 'category_sermons_screen.dart';
 import 'preacher_sermons_screen.dart';
 import 'sermon_player_screen.dart';
+import 'topic_list_screen.dart';
+import 'topic_sermons_screen.dart';
 
 class SermonsScreen extends StatefulWidget {
   const SermonsScreen({super.key});
@@ -17,6 +21,7 @@ class _SermonsScreenState extends State<SermonsScreen> {
   List<Sermon> _sermons = [];
   List<String> _categories = [];
   List<String> _preachers = [];
+  List<String> _topics = [];
   bool _isLoading = true;
 
   @override
@@ -29,7 +34,7 @@ class _SermonsScreenState extends State<SermonsScreen> {
     setState(() => _isLoading = true);
     try {
       final db = await DatabaseHelper().database;
-      
+
       // Load sermons
       final List<Map<String, dynamic>> sermonsMap = await db.query(
         'Sermons',
@@ -37,9 +42,10 @@ class _SermonsScreenState extends State<SermonsScreen> {
       );
       _sermons = sermonsMap.map((map) => Sermon.fromMap(map)).toList();
 
-      // Extract unique categories and preachers
+      // Extract unique categories, preachers, and topics
       _categories = _sermons.map((s) => s.category).toSet().toList();
       _preachers = _sermons.map((s) => s.preacher).toSet().toList();
+      _topics = _sermons.expand((s) => s.topics).toSet().toList();
 
       setState(() => _isLoading = false);
     } catch (e) {
@@ -88,10 +94,9 @@ class _SermonsScreenState extends State<SermonsScreen> {
             itemCount: _categories.take(5).length,
             itemBuilder: (context, index) {
               final category = _categories[index];
-              final categorySermons = _sermons
-                  .where((s) => s.category == category)
-                  .toList();
-              
+              final categorySermons =
+                  _sermons.where((s) => s.category == category).toList();
+
               return Card(
                 margin: const EdgeInsets.all(8),
                 child: InkWell(
@@ -181,10 +186,9 @@ class _SermonsScreenState extends State<SermonsScreen> {
             itemCount: _preachers.take(5).length,
             itemBuilder: (context, index) {
               final preacher = _preachers[index];
-              final preacherSermons = _sermons
-                  .where((s) => s.preacher == preacher)
-                  .toList();
-              
+              final preacherSermons =
+                  _sermons.where((s) => s.preacher == preacher).toList();
+
               return Card(
                 margin: const EdgeInsets.all(8),
                 child: InkWell(
@@ -236,6 +240,81 @@ class _SermonsScreenState extends State<SermonsScreen> {
     );
   }
 
+  Widget _buildTopicsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Topics',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => TopicListScreen(
+                        topics: _topics,
+                      ),
+                    ),
+                  );
+                },
+                child: const Text('View All'),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: 50,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            itemCount: _topics.take(8).length,
+            itemBuilder: (context, index) {
+              final topic = _topics[index];
+              final topicSermons = _sermons
+                  .where((s) => s.topics.contains(topic))
+                  .toList();
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: ActionChip(
+                  label: Text(topic),
+                  avatar: Text(
+                    topicSermons.length.toString(),
+                    style: TextStyle(
+                      color: Theme.of(context).primaryColor,
+                      fontSize: 12,
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => TopicSermonsScreen(
+                          topic: topic,
+                          sermons: topicSermons,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -271,6 +350,8 @@ class _SermonsScreenState extends State<SermonsScreen> {
                         _buildCategorySection(),
                         const SizedBox(height: 16),
                         _buildPreachersSection(),
+                        const SizedBox(height: 16),
+                        _buildTopicsSection(),
                       ],
                     ),
                   ),
@@ -285,4 +366,4 @@ class _SermonsScreenState extends State<SermonsScreen> {
     _searchController.dispose();
     super.dispose();
   }
-} 
+}

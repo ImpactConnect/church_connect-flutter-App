@@ -3,6 +3,7 @@ class Sermon {
   final String title;
   final String preacher;
   final String category;
+  final List<String> topics;
   final String? description;
   final String audioUrl;
   final bool isLocal;
@@ -14,6 +15,7 @@ class Sermon {
     required this.title,
     required this.preacher,
     required this.category,
+    this.topics = const [],
     this.description,
     required this.audioUrl,
     required this.isLocal,
@@ -27,6 +29,7 @@ class Sermon {
       'title': title,
       'preacher': preacher,
       'category': category,
+      'topics': topics.join(','),
       'description': description,
       'audio_url': audioUrl,
       'is_local': isLocal ? 1 : 0,
@@ -41,6 +44,7 @@ class Sermon {
       title: map['title'] as String,
       preacher: map['preacher'] as String,
       category: map['category'] as String,
+      topics: (map['topics'] as String?)?.split(',') ?? [],
       description: map['description'] as String?,
       audioUrl: map['audio_url'] as String,
       isLocal: map['is_local'] == 1,

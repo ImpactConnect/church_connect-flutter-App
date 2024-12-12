@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'screens/home_screen.dart';
 import 'screens/bible/bible_screen.dart';
 import 'screens/notes/notes_screen.dart';
+import 'screens/sermons/sermons_screen.dart';
+import 'screens/events/events_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,7 +32,9 @@ class MyApp extends StatelessWidget {
       home: const HomeScreen(),
       routes: {
         '/bible': (context) => const BibleScreen(),
+        '/sermons': (context) => const SermonsScreen(),
         '/notes': (context) => const NotesScreen(),
+        '/events': (context) => const EventsScreen(),
         // Add other routes...
       },
     );

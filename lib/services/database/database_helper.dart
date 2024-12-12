@@ -44,6 +44,7 @@ class DatabaseHelper {
         title TEXT NOT NULL,
         preacher TEXT NOT NULL,
         category TEXT NOT NULL,
+        topics TEXT,
         description TEXT,
         audio_url TEXT NOT NULL,
         is_local INTEGER NOT NULL,
@@ -54,13 +55,49 @@ class DatabaseHelper {
 
     // Add these categories for initial data
     await db.execute('''
-      INSERT INTO Sermons (title, preacher, category, description, audio_url, is_local, date, duration)
+      INSERT INTO Sermons (title, preacher, category, topics, description, audio_url, is_local, date, duration)
       VALUES 
-        ('Sample Sermon 1', 'Pastor John', 'Sunday Service', 'Description here', 'path/to/audio1.mp3', 0, '2024-03-10T10:00:00.000Z', 1800),
-        ('Sample Sermon 2', 'Pastor Mike', 'Bible Study', 'Description here', 'path/to/audio2.mp3', 0, '2024-03-09T18:30:00.000Z', 3600)
+        ('Sample Sermon 1', 'Pastor John', 'Sunday Service', 'Faith,Prayer', 'Description here', 'path/to/audio1.mp3', 0, '2024-03-10T10:00:00.000Z', 1800),
+        ('Sample Sermon 2', 'Pastor Mike', 'Bible Study', 'Love,Grace', 'Description here', 'path/to/audio2.mp3', 0, '2024-03-09T18:30:00.000Z', 3600)
     ''');
 
     // Add more tables as needed
+
+    await db.execute('''
+      CREATE TABLE Events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        description TEXT NOT NULL,
+        start_date TEXT NOT NULL,
+        end_date TEXT NOT NULL,
+        location TEXT NOT NULL,
+        image_url TEXT,
+        category TEXT NOT NULL,
+        is_recurring INTEGER NOT NULL DEFAULT 0,
+        recurrence_rule TEXT,
+        requires_registration INTEGER NOT NULL DEFAULT 0,
+        max_attendees INTEGER,
+        current_attendees INTEGER NOT NULL DEFAULT 0
+      )
+    ''');
+
+    // Add sample events
+    await db.execute('''
+      INSERT INTO Events (
+        title, description, start_date, end_date, location, category,
+        is_recurring, requires_registration
+      )
+      VALUES 
+        ('Sunday Service', 'Weekly Sunday worship service', 
+         '2024-03-17 09:00:00', '2024-03-17 11:00:00', 'Main Sanctuary', 
+         'Worship Service', 1, 0),
+        ('Youth Bible Study', 'Weekly youth Bible study and fellowship', 
+         '2024-03-20 18:00:00', '2024-03-20 19:30:00', 'Youth Room', 
+         'Bible Study', 1, 0),
+        ('Easter Service', 'Special Easter Sunday celebration', 
+         '2024-03-31 09:00:00', '2024-03-31 12:00:00', 'Main Sanctuary', 
+         'Special Service', 0, 0)
+    ''');
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
