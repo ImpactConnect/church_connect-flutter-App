@@ -5,7 +5,6 @@ import 'category_list_screen.dart';
 import 'preacher_list_screen.dart';
 import 'category_sermons_screen.dart';
 import 'preacher_sermons_screen.dart';
-import 'sermon_player_screen.dart';
 import 'topic_list_screen.dart';
 import 'topic_sermons_screen.dart';
 
@@ -280,9 +279,8 @@ class _SermonsScreenState extends State<SermonsScreen> {
             itemCount: _topics.take(8).length,
             itemBuilder: (context, index) {
               final topic = _topics[index];
-              final topicSermons = _sermons
-                  .where((s) => s.topics.contains(topic))
-                  .toList();
+              final topicSermons =
+                  _sermons.where((s) => s.topics.contains(topic)).toList();
 
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4),

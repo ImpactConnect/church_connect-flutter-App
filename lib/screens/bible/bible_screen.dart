@@ -23,7 +23,7 @@ class _BibleScreenState extends State<BibleScreen> {
   final TextEditingController _searchController = TextEditingController();
   double _fontSize = 16.0;
   Set<String> _bookmarkedVerses = {};
-  Set<String> _highlightedVerses = {};
+  final Set<String> _highlightedVerses = {};
   bool _showBookmarks = false;
   final ScrollController _scrollController = ScrollController();
   String? _scrollToVerseId;

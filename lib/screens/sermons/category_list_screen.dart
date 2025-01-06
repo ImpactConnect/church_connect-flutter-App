@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../models/sermon.dart';
 import 'category_sermons_screen.dart';
 
 class CategoryListScreen extends StatelessWidget {
@@ -31,7 +30,7 @@ class CategoryListScreen extends StatelessWidget {
                 MaterialPageRoute(
                   builder: (context) => CategorySermonsScreen(
                     category: category,
-                    sermons: [], // We'll load sermons in the next screen
+                    sermons: const [], // We'll load sermons in the next screen
                   ),
                 ),
               );

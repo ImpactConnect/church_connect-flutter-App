@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../models/sermon.dart';
 import 'preacher_sermons_screen.dart';
 
 class PreacherListScreen extends StatelessWidget {
@@ -33,7 +32,7 @@ class PreacherListScreen extends StatelessWidget {
                 MaterialPageRoute(
                   builder: (context) => PreacherSermonsScreen(
                     preacher: preacher,
-                    sermons: [],  // We'll load sermons in the next screen
+                    sermons: const [], // We'll load sermons in the next screen
                   ),
                 ),
               );
@@ -43,4 +42,4 @@ class PreacherListScreen extends StatelessWidget {
       ),
     );
   }
-} 
+}
