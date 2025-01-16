@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Church Connect</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Panel</h1>
+        
+        <div class="form-section">
+            <h2>Add Event</h2>
+            <form id="eventForm">
+                <input type="text" id="eventTitle" placeholder="Event Title" required>
+                <textarea id="eventDescription" placeholder="Event Description" required></textarea>
+                <input type="datetime-local" id="eventStartDate" required>
+                <input type="datetime-local" id="eventEndDate" required>
+                <input type="text" id="eventLocation" placeholder="Event Location" required>
+                <input type="text" id="eventImageUrl" placeholder="Image URL">
+                <select id="eventCategory">
+                    <option value="Worship">Worship</option>
+                    <option value="Conference">Conference</option>
+                    <option value="Community">Community</option>
+                    <option value="Youth">Youth</option>
+                    <option value="Outreach">Outreach</option>
+                </select>
+                <button type="submit">Add Event</button>
+            </form>
+        </div>
+
+        <div class="form-section">
+            <h2>Add Sermon</h2>
+            <form id="sermonForm">
+                <input type="text" id="sermonTitle" placeholder="Sermon Title" required>
+                <input type="text" id="sermonPreacher" placeholder="Preacher" required>
+                <textarea id="sermonDescription" placeholder="Sermon Description" required></textarea>
+                <input type="text" id="sermonAudioUrl" placeholder="Audio URL" required>
+                <input type="text" id="sermonImageUrl" placeholder="Image URL">
+                <input type="datetime-local" id="sermonDate" required>
+                <select id="sermonCategory">
+                    <option value="Spiritual Development">Spiritual Development</option>
+                    <option value="Family">Family</option>
+                    <option value="Business">Business</option>
+                    <option value="Leadership">Leadership</option>
+                    <option value="Finance">Finance</option>
+                </select>
+                <button type="submit">Add Sermon</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

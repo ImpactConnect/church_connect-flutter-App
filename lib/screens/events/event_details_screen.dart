@@ -1,135 +1,167 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
-import '../../models/event.dart';
+import '../../services/supabase_event_service.dart';
 
-class EventDetailsScreen extends StatelessWidget {
-  final Event event;
+class EventDetailsScreen extends StatefulWidget {
+  final String eventId;
 
-  const EventDetailsScreen({
-    super.key,
-    required this.event,
-  });
+  const EventDetailsScreen({super.key, required this.eventId});
+
+  @override
+  _EventDetailsScreenState createState() => _EventDetailsScreenState();
+}
+
+class _EventDetailsScreenState extends State<EventDetailsScreen> {
+  final _eventService = SupabaseEventService();
+  Map<String, dynamic>? _event;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchEventDetails();
+  }
+
+  Future<void> _fetchEventDetails() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final event = await _eventService.getEventById(widget.eventId);
+      setState(() {
+        _event = event;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      _showErrorSnackBar(e.toString());
+    }
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Failed to load event details: $message')),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_event == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Event Details')),
+        body: const Center(child: Text('Event not found')),
+      );
+    }
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Event Details'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (event.imageUrl != null)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  event.imageUrl!,
-                  height: 200,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                ),
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 300.0,
+            floating: false,
+            pinned: true,
+            flexibleSpace: FlexibleSpaceBar(
+              title: Text(_event!['title'] ?? 'Event Details'),
+              background: CachedNetworkImage(
+                imageUrl: _event!['image_url'] ??
+                    'https://via.placeholder.com/400x200.png?text=Church+Event',
+                fit: BoxFit.cover,
               ),
-            const SizedBox(height: 16),
-            Text(
-              event.title,
-              style: Theme.of(context).textTheme.headlineSmall,
             ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Icon(
-                  Icons.calendar_today,
-                  size: 16,
-                  color: Colors.grey[600],
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  DateFormat('MMM d, y • h:mm a').format(event.startDate),
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                Icon(
-                  Icons.location_on,
-                  size: 16,
-                  color: Colors.grey[600],
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  event.location,
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Description',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            Text(event.description),
-            if (event.requiresRegistration) ...[
-              const SizedBox(height: 16),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Registration',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Icon(
-                            event.isFull ? Icons.error_outline : Icons.people,
-                            size: 16,
-                            color: event.isFull ? Colors.red : Colors.grey[600],
+          ),
+          SliverList(
+            delegate: SliverChildListDelegate([
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Event Details
+                    _buildEventDetailRow(
+                      icon: Icons.calendar_today,
+                      label: 'Date',
+                      value: DateFormat('EEEE, MMM d, yyyy')
+                          .format(DateTime.parse(_event!['start_date'])),
+                    ),
+                    _buildEventDetailRow(
+                      icon: Icons.location_on,
+                      label: 'Location',
+                      value: _event!['location'] ?? 'Location not specified',
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Description
+                    Text(
+                      'About this Event',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _event!['description'] ?? 'No description available',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+
+                    // Registration
+                    if (_event!['registration_required'] == true)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            // Implement registration logic
+                          },
+                          icon: const Icon(Icons.event_available),
+                          label: const Text('Register for Event'),
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(double.infinity, 50),
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            event.isFull
-                                ? 'Event is full'
-                                : '${event.currentAttendees}/${event.maxAttendees} registered',
-                            style: TextStyle(
-                              color: event.isFull ? Colors.red : Colors.grey[600],
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                    ],
-                  ),
+                  ],
                 ),
               ),
-            ],
-          ],
-        ),
+            ]),
+          ),
+        ],
       ),
-      bottomNavigationBar: event.requiresRegistration && !event.isFull && !event.isPast
-          ? SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: ElevatedButton(
-                  onPressed: () {
-                    // TODO: Implement registration
-                  },
-                  child: const Text('Register'),
-                ),
-              ),
-            )
-          : null,
     );
   }
-} 
+
+  Widget _buildEventDetailRow({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Icon(icon, color: Theme.of(context).primaryColor),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              Text(
+                value,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}

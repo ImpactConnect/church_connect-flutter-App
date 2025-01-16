@@ -238,14 +238,29 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildFeatureGrid() {
     final List<Map<String, dynamic>> features = [
-      {'title': 'Sermons', 'icon': Icons.headphones, 'route': '/sermons'},
-      {'title': 'Bible', 'icon': Icons.book, 'route': '/bible'},
-      {'title': 'Notes', 'icon': Icons.note, 'route': '/notes'},
-      {'title': 'Events', 'icon': Icons.event, 'route': '/events'},
-      {'title': 'Hymnal', 'icon': Icons.music_note, 'route': '/hymnal'},
-      {'title': 'Gallery', 'icon': Icons.photo_library, 'route': '/gallery'},
-      {'title': 'Donate', 'icon': Icons.favorite, 'route': '/donate'},
-      {'title': 'More', 'icon': Icons.more_horiz, 'route': '/more'},
+      // Core Features
+      {'title': 'Live Service', 'icon': Icons.live_tv, 'route': '/live-service', 'color': Colors.red},
+      {'title': 'Sermons', 'icon': Icons.headphones, 'route': '/sermons', 'color': Colors.blue},
+      {'title': 'Bible', 'icon': Icons.book, 'route': '/bible', 'color': Colors.purple},
+      {'title': 'Prayer Wall', 'icon': Icons.people, 'route': '/prayer-wall', 'color': Colors.teal},
+      
+      // Media Features
+      {'title': 'Radio', 'icon': Icons.radio, 'route': '/radio', 'color': Colors.orange},
+      {'title': 'Videos', 'icon': Icons.video_library, 'route': '/videos', 'color': Colors.red},
+      {'title': 'Hymnal', 'icon': Icons.music_note, 'route': '/hymnal', 'color': Colors.indigo},
+      {'title': 'Gallery', 'icon': Icons.photo_library, 'route': '/gallery', 'color': Colors.green},
+      
+      // Community Features
+      {'title': 'Community', 'icon': Icons.forum, 'route': '/community', 'color': Colors.blue},
+      {'title': 'Events', 'icon': Icons.event, 'route': '/events', 'color': Colors.amber},
+      {'title': 'Notes', 'icon': Icons.note, 'route': '/notes', 'color': Colors.cyan},
+      {'title': 'Blog', 'icon': Icons.article, 'route': '/blog', 'color': Colors.deepPurple},
+      
+      // Engagement Features
+      {'title': 'Testimonies', 'icon': Icons.stars, 'route': '/testimonies', 'color': Colors.pink},
+      {'title': 'Announcements', 'icon': Icons.campaign, 'route': '/announcements', 'color': Colors.orange},
+      {'title': 'Give', 'icon': Icons.favorite, 'route': '/give', 'color': Colors.red},
+      {'title': 'Connect Groups', 'icon': Icons.groups, 'route': '/connect-groups', 'color': Colors.teal},
     ];
 
     return GridView.count(
@@ -253,7 +268,7 @@ class _HomeScreenState extends State<HomeScreen> {
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.all(16),
       crossAxisCount: 4,
-      childAspectRatio: 1.0,
+      childAspectRatio: 0.85,
       mainAxisSpacing: 16,
       crossAxisSpacing: 16,
       children: features
@@ -261,7 +276,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 context,
                 feature['title'],
                 feature['icon'],
-                () => Navigator.pushNamed(context, feature['route']),
+                () {
+                  if (feature['route'] == '/live-service') {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Live service coming soon!')),
+                    );
+                  } else {
+                    Navigator.pushNamed(context, feature['route']);
+                  }
+                },
+                color: feature['color'],
               ))
           .toList(),
     );
@@ -272,6 +296,7 @@ class _HomeScreenState extends State<HomeScreen> {
     String title,
     IconData icon,
     VoidCallback onTap,
+    {Color? color}
   ) {
     return Card(
       elevation: 2,
@@ -284,19 +309,29 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              size: 28,
-              color: Theme.of(context).primaryColor,
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color?.withOpacity(0.1) ?? Theme.of(context).primaryColor.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                size: 24,
+                color: color ?? Theme.of(context).primaryColor,
+              ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 8),
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 12,
+              style: TextStyle(
+                fontSize: 11,
                 fontWeight: FontWeight.w500,
+                color: Colors.grey[800],
               ),
               textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
