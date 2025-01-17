@@ -389,49 +389,55 @@ class SupabaseSermonService {
     String? category,
     List<String>? topics,
     String? preacher,
-    required int page,
+    int page = 1,
   }) async {
     try {
-      print(
-          'Fetching sermons with params: searchQuery=$searchQuery, category=$category, topics=$topics, preacher=$preacher, page=$page');
-
-      var queryBuilder = _supabase.from('sermons').select();
+      var query = _supabase.from('sermons').select();
 
       if (searchQuery != null && searchQuery.isNotEmpty) {
-        queryBuilder = queryBuilder
-            .or('title.ilike.%$searchQuery%,description.ilike.%$searchQuery%');
+        query = query.or('title.ilike.%$searchQuery%,description.ilike.%$searchQuery%');
       }
 
-      if (category != null) {
-        queryBuilder = queryBuilder.eq('category', category);
+      if (category != null && category.isNotEmpty) {
+        query = query.eq('category', category);
       }
 
-      if (preacher != null) {
-        queryBuilder = queryBuilder.eq('preacher', preacher);
+      if (preacher != null && preacher.isNotEmpty) {
+        query = query.eq('preacher', preacher);
       }
 
       if (topics != null && topics.isNotEmpty) {
-        queryBuilder = queryBuilder.contains('tags', topics);
+        query = query.contains('tags', topics);
       }
 
-      final response = await queryBuilder
+      final response = await query
           .order('sermon_date', ascending: false)
           .range((page - 1) * _pageSize, page * _pageSize - 1);
 
-      print('Raw response: $response');
+      print('Fetched sermons response: $response'); // Debug print
 
-      if (response.isEmpty) {
-        print('No sermons found in response');
-        return [];
+      final List<Sermon> sermons = [];
+      final downloadedSermons = await _getDownloadedSermons();
+      final favoriteIds = await _getFavoriteSermonIds();
+
+      for (var data in response) {
+        try {
+          // Add downloaded and favorite status
+          data['is_downloaded'] = downloadedSermons.containsKey(data['id']);
+          data['local_audio_path'] = downloadedSermons[data['id']];
+          data['is_favorite'] = favoriteIds.contains(data['id']);
+          
+          final sermon = Sermon.fromSupabase(data);
+          sermons.add(sermon);
+        } catch (e) {
+          print('Error parsing sermon: $e');
+          continue;
+        }
       }
 
-      final sermons =
-          response.map((data) => Sermon.fromSupabase(data)).toList();
-
-      print('Successfully parsed ${sermons.length} sermons');
       return sermons;
     } catch (e) {
-      print('Error fetching sermons: $e');
+      print('Error searching sermons: $e');
       return [];
     }
   }
@@ -441,56 +447,54 @@ class SupabaseSermonService {
     String? category,
     List<String>? topics,
     String? preacher,
-    required int page,
+    int page = 1,
   }) async {
+    final favoriteIds = await _getFavoriteSermonIds();
+    if (favoriteIds.isEmpty) return [];
+
     try {
-      final favoriteIds = await _getFavoriteSermonIds();
-      if (favoriteIds.isEmpty) {
-        return [];
-      }
-
-      print(
-          'Fetching favorite sermons with params: searchQuery=$searchQuery, category=$category, topics=$topics, preacher=$preacher, page=$page');
-
-      var queryBuilder = _supabase
+      var query = _supabase
           .from('sermons')
           .select()
-          .filter('id', 'in', favoriteIds.toList());
+          .in_('id', favoriteIds.toList());
 
       if (searchQuery != null && searchQuery.isNotEmpty) {
-        queryBuilder = queryBuilder
-            .or('title.ilike.%$searchQuery%,description.ilike.%$searchQuery%');
+        query = query.or('title.ilike.%$searchQuery%,description.ilike.%$searchQuery%');
       }
 
-      if (category != null) {
-        queryBuilder = queryBuilder.eq('category', category);
+      if (category != null && category.isNotEmpty) {
+        query = query.eq('category', category);
       }
 
-      if (preacher != null) {
-        queryBuilder = queryBuilder.eq('preacher', preacher);
+      if (preacher != null && preacher.isNotEmpty) {
+        query = query.eq('preacher', preacher);
       }
 
       if (topics != null && topics.isNotEmpty) {
-        queryBuilder = queryBuilder.contains('tags', topics);
+        query = query.contains('tags', topics);
       }
 
-      final response = await queryBuilder
+      final response = await query
           .order('sermon_date', ascending: false)
           .range((page - 1) * _pageSize, page * _pageSize - 1);
 
-      print('Raw favorite sermons response: $response');
+      final List<Sermon> sermons = [];
+      final downloadedSermons = await _getDownloadedSermons();
 
-      if (response.isEmpty) {
-        print('No favorite sermons found');
-        return [];
+      for (var data in response) {
+        try {
+          data['is_downloaded'] = downloadedSermons.containsKey(data['id']);
+          data['local_audio_path'] = downloadedSermons[data['id']];
+          data['is_favorite'] = true;
+          
+          final sermon = Sermon.fromSupabase(data);
+          sermons.add(sermon);
+        } catch (e) {
+          print('Error parsing favorite sermon: $e');
+          continue;
+        }
       }
 
-      final sermons = response.map((data) {
-        final sermon = Sermon.fromSupabase(data);
-        return sermon.copyWith(isFavorite: true);
-      }).toList();
-
-      print('Successfully parsed ${sermons.length} favorite sermons');
       return sermons;
     } catch (e) {
       print('Error fetching favorite sermons: $e');
@@ -503,59 +507,52 @@ class SupabaseSermonService {
     String? category,
     List<String>? topics,
     String? preacher,
-    required int page,
+    int page = 1,
   }) async {
     try {
       final downloads = await _getDownloadedSermons();
-      if (downloads.isEmpty) {
-        return [];
-      }
+      if (downloads.isEmpty) return [];
 
-      print(
-          'Fetching downloaded sermons with params: searchQuery=$searchQuery, category=$category, topics=$topics, preacher=$preacher, page=$page');
-
-      var queryBuilder = _supabase
+      var query = _supabase
           .from('sermons')
           .select()
-          .filter('id', 'in', downloads.keys.toList());
+          .in_('id', downloads.keys.toList());
 
       if (searchQuery != null && searchQuery.isNotEmpty) {
-        queryBuilder = queryBuilder
-            .or('title.ilike.%$searchQuery%,description.ilike.%$searchQuery%');
+        query = query.or('title.ilike.%$searchQuery%,description.ilike.%$searchQuery%');
       }
 
-      if (category != null) {
-        queryBuilder = queryBuilder.eq('category', category);
+      if (category != null && category.isNotEmpty) {
+        query = query.eq('category', category);
       }
 
-      if (preacher != null) {
-        queryBuilder = queryBuilder.eq('preacher', preacher);
+      if (preacher != null && preacher.isNotEmpty) {
+        query = query.eq('preacher', preacher);
       }
 
       if (topics != null && topics.isNotEmpty) {
-        queryBuilder = queryBuilder.contains('tags', topics);
+        query = query.contains('tags', topics);
       }
 
-      final response = await queryBuilder
+      final response = await query
           .order('sermon_date', ascending: false)
           .range((page - 1) * _pageSize, page * _pageSize - 1);
 
-      print('Raw downloaded sermons response: $response');
-
-      if (response.isEmpty) {
-        print('No downloaded sermons found');
-        return [];
+      final List<Sermon> sermons = [];
+      for (var data in response) {
+        try {
+          data['is_downloaded'] = true;
+          data['local_audio_path'] = downloads[data['id']];
+          data['is_favorite'] = await isSermonFavorite(data['id']);
+          
+          final sermon = Sermon.fromSupabase(data);
+          sermons.add(sermon);
+        } catch (e) {
+          print('Error parsing downloaded sermon: $e');
+          continue;
+        }
       }
 
-      final sermons = response.map((data) {
-        final sermon = Sermon.fromSupabase(data);
-        return sermon.copyWith(
-          isDownloaded: true,
-          localAudioPath: downloads[sermon.id],
-        );
-      }).toList();
-
-      print('Successfully parsed ${sermons.length} downloaded sermons');
       return sermons;
     } catch (e) {
       print('Error fetching downloaded sermons: $e');
@@ -563,14 +560,61 @@ class SupabaseSermonService {
     }
   }
 
-  Future<bool> isSermonFavorite(String sermonId) async {
-    final favoriteIds = await _getFavoriteSermonIds();
-    return favoriteIds.contains(sermonId);
+  Future<List<String>> getAllCategories() async {
+    try {
+      final response = await _supabase
+          .from('sermons')
+          .select('category')
+          .not('category', 'is', null);
+
+      return (response as List)
+          .map((item) => item['category'] as String)
+          .where((category) => category.isNotEmpty)
+          .toSet()
+          .toList();
+    } catch (e) {
+      print('Error fetching categories: $e');
+      return [];
+    }
   }
 
-  Future<bool> isSermonDownloaded(String sermonId) async {
-    final downloads = await _getDownloadedSermons();
-    return downloads.containsKey(sermonId);
+  Future<List<String>> getAllTopics() async {
+    try {
+      final response = await _supabase
+          .from('sermons')
+          .select('tags')
+          .not('tags', 'is', null);
+
+      final Set<String> topics = {};
+      for (var item in response) {
+        if (item['tags'] is List) {
+          topics.addAll((item['tags'] as List).cast<String>());
+        }
+      }
+      return topics.toList()..sort();
+    } catch (e) {
+      print('Error fetching topics: $e');
+      return [];
+    }
+  }
+
+  Future<List<String>> getAllPreachers() async {
+    try {
+      final response = await _supabase
+          .from('sermons')
+          .select('preacher')
+          .not('preacher', 'is', null);
+
+      return (response as List)
+          .map((item) => item['preacher'] as String)
+          .where((preacher) => preacher.isNotEmpty)
+          .toSet()
+          .toList()
+        ..sort();
+    } catch (e) {
+      print('Error fetching preachers: $e');
+      return [];
+    }
   }
 
   Future<List<Sermon>> getRelatedSermons(String sermonId) async {
@@ -603,62 +647,6 @@ class SupabaseSermonService {
     }
   }
 
-  Future<List<String>> getAllCategories() async {
-    try {
-      final response = await _supabase
-          .from('sermons')
-          .select('category')
-          .not('category', 'is', null)
-          .order('category');
-
-      final categories = response
-          .map<String>((row) => row['category'] as String)
-          .toSet() // Remove duplicates
-          .toList();
-
-      return categories..sort();
-    } catch (e) {
-      print('Error fetching categories: $e');
-      return [];
-    }
-  }
-
-  Future<List<String>> getAllTopics() async {
-    try {
-      final response = await _supabase
-          .from('sermons')
-          .select('tags')
-          .not('tags', 'is', null);
-
-      final topics = response
-          .expand<String>((row) => (row['tags'] as List).cast<String>())
-          .toSet() // Remove duplicates
-          .toList();
-
-      return topics..sort();
-    } catch (e) {
-      print('Error fetching topics: $e');
-      return [];
-    }
-  }
-
-  Future<List<String>> getAllPreachers() async {
-    try {
-      final response = await _supabase
-          .from('sermons')
-          .select('preacher')
-          .not('preacher', 'is', null);
-
-      return response
-          .map((row) => row['preacher'] as String)
-          .toSet() // Remove duplicates
-          .toList();
-    } catch (e) {
-      print('Error fetching preachers: $e');
-      return [];
-    }
-  }
-
   Future<List<Sermon>> getSermonsByCategory(String category) async {
     try {
       if (!SermonCategories.all.contains(category)) {
@@ -676,5 +664,15 @@ class SupabaseSermonService {
       print('Error fetching sermons by category: $e');
       return [];
     }
+  }
+
+  Future<bool> isSermonFavorite(String sermonId) async {
+    final favoriteIds = await _getFavoriteSermonIds();
+    return favoriteIds.contains(sermonId);
+  }
+
+  Future<bool> isSermonDownloaded(String sermonId) async {
+    final downloads = await _getDownloadedSermons();
+    return downloads.containsKey(sermonId);
   }
 }

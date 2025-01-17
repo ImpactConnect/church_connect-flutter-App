@@ -1,13 +1,7 @@
-plugins {
-    id "com.android.application"
-    id "kotlin-android"
-    id "dev.flutter.flutter-gradle-plugin"
-}
-
 def localProperties = new Properties()
-def localPropertiesFile = rootProject.file("local.properties")
+def localPropertiesFile = rootProject.file('local.properties')
 if (localPropertiesFile.exists()) {
-    localPropertiesFile.withReader("UTF-8") { reader ->
+    localPropertiesFile.withReader('UTF-8') { reader ->
         localProperties.load(reader)
     }
 }
@@ -17,10 +11,24 @@ if (flutterRoot == null) {
     throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
 }
 
+def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
+if (flutterVersionCode == null) {
+    flutterVersionCode = '1'
+}
+
+def flutterVersionName = localProperties.getProperty('flutter.versionName')
+if (flutterVersionName == null) {
+    flutterVersionName = '1.0'
+}
+
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
+
 android {
-    namespace = "com.example.church_connect"
-    compileSdk = 34
-    ndkVersion = flutter.ndkVersion
+    namespace "com.example.church_connect"
+    compileSdkVersion = 34
+    ndkVersion flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -37,12 +45,12 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.church_connect"
-        minSdk = 21
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
-        multiDexEnabled = true
+        applicationId "com.example.church_connect"
+        minSdkVersion 21  // Updated for just_audio compatibility
+        targetSdkVersion = 34
+        versionCode flutterVersionCode.toInteger()
+        versionName flutterVersionName
+        multiDexEnabled true
     }
 
     buildTypes {
@@ -53,7 +61,7 @@ android {
 }
 
 flutter {
-    source = "../.."
+    source '../..'
 }
 
 dependencies {

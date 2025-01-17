@@ -10,27 +10,35 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  supabase_flutter: ^2.8.3
+  youtube_player_flutter: ^9.0.0
+  flutter_inappwebview: ^6.0.0
+  cupertino_icons: ^1.0.2
+  supabase_flutter: ^1.10.25
+  json_annotation: ^4.8.1
   path_provider: ^2.1.1
+  share_plus: ^7.2.1
+  fluttertoast: ^8.2.4
+  permission_handler: ^11.0.1
+  webview_flutter: ^4.4.2
+  url_launcher: ^6.2.2
   http: ^1.1.0
   shared_preferences: ^2.2.2
   carousel_slider: ^5.0.0
   cached_network_image: ^3.3.1
   google_fonts: ^6.1.0
   flutter_svg: ^2.0.9
-  cupertino_icons: ^1.0.6
   sqflite: ^2.3.3
   path: ^1.9.0
   flutter_markdown: ^0.6.20
   pdf: ^3.10.8
-  just_audio: ^0.9.36
+  just_audio: ^0.9.43
   just_audio_background: ^0.0.1-beta.11
   audio_session: ^0.1.18
   rxdart: ^0.27.7
   intl: ^0.18.1
-  share_plus: ^7.2.1
-  fluttertoast: ^8.2.4
-  permission_handler: ^11.0.1
+  flutter_chat_ui: ^1.6.9
+  flutter_chat_types: ^3.6.2
+  provider: ^6.1.1
 
 dev_dependencies:
   flutter_test:
@@ -41,5 +49,7 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/kjv.json
-    - assets/images/sermon_header.jpg
+    - assets/
+    - assets/images/
+    - assets/icons/
+    - assets/data/kjv.json

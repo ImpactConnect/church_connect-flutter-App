@@ -38,7 +38,7 @@ class _BibleScreenState extends State<BibleScreen> {
   Future<void> _loadBible() async {
     try {
       setState(() => _isLoading = true);
-      final String response = await rootBundle.loadString('assets/kjv.json');
+      final String response = await rootBundle.loadString('assets/data/kjv.json');
       final List<dynamic> data = json.decode(response);
 
       _verses = data.map((verse) => BibleVerse.fromJson(verse)).toList();
