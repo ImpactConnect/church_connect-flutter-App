@@ -447,110 +447,102 @@ class _SermonsScreenState extends State<SermonsScreen>
     final formattedDate = DateFormat('MMM d, y').format(sermon.sermonDate);
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      child: InkWell(
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => SermonPlayerScreen(sermon: sermon),
+      elevation: 2,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+            child: Image.network(
+              sermon.imageUrl ?? 'https://picsum.photos/300/200', // Fallback to placeholder image
+              height: 200,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  height: 200,
+                  width: double.infinity,
+                  color: Colors.grey[300],
+                  child: const Icon(
+                    Icons.image_not_supported,
+                    size: 50,
+                    color: Colors.grey,
+                  ),
+                );
+              },
+            ),
           ),
-        ),
-        borderRadius: BorderRadius.circular(8),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: Row(
-            children: [
-              // Play button
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.1),
-                  shape: BoxShape.circle,
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  sermon.title,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                child: Icon(
-                  Icons.play_arrow,
-                  color: Theme.of(context).primaryColor,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Sermon details
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
+                const SizedBox(height: 2),
+                Row(
                   children: [
-                    Text(
-                      sermon.title,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            '${sermon.preacher} • $formattedDate',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 12,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                    Expanded(
+                      child: Text(
+                        '${sermon.preacher} • $formattedDate',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 12,
                         ),
-                      ],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 ),
+              ],
+            ),
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: Icon(
+                  sermon.isFavorite
+                      ? Icons.favorite
+                      : Icons.favorite_border,
+                  color: sermon.isFavorite ? Colors.red : Colors.grey[400],
+                  size: 20,
+                ),
+                onPressed: () => _toggleFavorite(sermon),
+                padding: const EdgeInsets.all(8),
+                constraints: const BoxConstraints(
+                  minWidth: 32,
+                  minHeight: 32,
+                ),
               ),
-              // Action buttons
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      sermon.isFavorite
-                          ? Icons.favorite
-                          : Icons.favorite_border,
-                      color: sermon.isFavorite ? Colors.red : Colors.grey[400],
-                      size: 20,
-                    ),
-                    onPressed: () => _toggleFavorite(sermon),
-                    padding: const EdgeInsets.all(8),
-                    constraints: const BoxConstraints(
-                      minWidth: 32,
-                      minHeight: 32,
-                    ),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      sermon.isDownloaded
-                          ? Icons.download_done
-                          : Icons.download,
-                      color:
-                          sermon.isDownloaded ? Colors.green : Colors.grey[400],
-                      size: 20,
-                    ),
-                    onPressed: () => _toggleDownload(sermon),
-                    padding: const EdgeInsets.all(8),
-                    constraints: const BoxConstraints(
-                      minWidth: 32,
-                      minHeight: 32,
-                    ),
-                  ),
-                ],
+              IconButton(
+                icon: Icon(
+                  sermon.isDownloaded
+                      ? Icons.download_done
+                      : Icons.download,
+                  color:
+                      sermon.isDownloaded ? Colors.green : Colors.grey[400],
+                  size: 20,
+                ),
+                onPressed: () => _toggleDownload(sermon),
+                padding: const EdgeInsets.all(8),
+                constraints: const BoxConstraints(
+                  minWidth: 32,
+                  minHeight: 32,
+                ),
               ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }
@@ -765,7 +757,6 @@ class _FilterDialogBase extends StatefulWidget {
   final bool isMultiSelect;
 
   const _FilterDialogBase({
-    super.key,
     required this.title,
     required this.options,
     required this.selected,

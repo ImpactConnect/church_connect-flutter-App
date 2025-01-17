@@ -240,6 +240,12 @@ class _HomeScreenState extends State<HomeScreen> {
             () => Navigator.pushNamed(context, '/sermons'),
           ),
           _buildQuickActionCard(
+            'Blog',
+            Icons.article,
+            Colors.deepPurple,
+            () => Navigator.pushNamed(context, '/blog'),
+          ),
+          _buildQuickActionCard(
             'Give',
             Icons.favorite,
             Colors.pink,
@@ -386,10 +392,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Map<String, dynamic>> _mediaFeatures = [
     {
-      'title': 'Radio',
-      'icon': Icons.radio,
-      'route': '/radio',
-      'color': Colors.orange,
+      'title': 'Sermons',
+      'icon': Icons.headphones,
+      'route': '/sermons',
+      'color': Colors.blue,
+    },
+    {
+      'title': 'Blog',
+      'icon': Icons.article,
+      'route': '/blog',
+      'color': Colors.deepPurple,
     },
     {
       'title': 'Videos',
@@ -398,16 +410,10 @@ class _HomeScreenState extends State<HomeScreen> {
       'color': Colors.red,
     },
     {
-      'title': 'Hymnal',
-      'icon': Icons.music_note,
-      'route': '/hymnal',
-      'color': Colors.indigo,
-    },
-    {
-      'title': 'Gallery',
-      'icon': Icons.photo_library,
-      'route': '/gallery',
-      'color': Colors.green,
+      'title': 'Radio',
+      'icon': Icons.radio,
+      'route': '/radio',
+      'color': Colors.orange,
     },
   ];
 

@@ -12,6 +12,11 @@ import 'screens/radio/index.dart';
 import 'models/sermon.dart';
 import 'package:provider/provider.dart';
 import 'providers/radio_provider.dart';
+import 'screens/auth/register_screen.dart';
+import 'screens/auth/login_screen.dart';
+import 'screens/community/community_screen.dart';
+import 'screens/blog/blog_list_screen.dart';
+import 'screens/blog/blog_detail_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,11 +59,13 @@ class MyApp extends StatelessWidget {
             return AudioPlayerScreen(sermon: sermon);
           },
           '/radio': (context) => const RadioScreen(),
+          '/register': (context) => const RegisterScreen(),
+          '/login': (context) => const LoginScreen(),
+          '/community': (context) => const CommunityScreen(),
+          '/blog': (context) => const BlogListScreen(),
           '/videos': (context) => _buildComingSoonScreen('Videos'),
           '/hymnal': (context) => _buildComingSoonScreen('Hymnal'),
           '/gallery': (context) => _buildComingSoonScreen('Gallery'),
-          '/community': (context) => _buildComingSoonScreen('Community'),
-          '/blog': (context) => _buildComingSoonScreen('Blog'),
           '/testimonies': (context) => _buildComingSoonScreen('Testimonies'),
           '/announcements': (context) => _buildComingSoonScreen('Announcements'),
           '/give': (context) => _buildComingSoonScreen('Give'),
