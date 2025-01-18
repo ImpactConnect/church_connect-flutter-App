@@ -95,23 +95,183 @@ class _SermonsScreenState extends State<SermonsScreen> {
     );
   }
 
-  Widget _buildFilterChip({
-    required String label,
-    required Function onTap,
-  }) {
-    return Chip(
-      label: Text(label),
-      onDeleted: onTap as void Function()?,
-    );
-  }
-
   Widget _buildSermonCard(Map<String, dynamic> sermon) {
-    return ListTile(
-      title: Text(sermon['title'] ?? 'Untitled Sermon'),
-      subtitle: Text(sermon['preacher'] ?? 'Unknown Preacher'),
-      onTap: () {
-        // Navigate to sermon details
-      },
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: ListTile(
+        leading: const Icon(Icons.play_circle_outline, size: 32),
+        title: Text(
+          sermon['title'] ?? 'Untitled Sermon',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontWeight: FontWeight.w500),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              sermon['preacher'] ?? 'Unknown Preacher',
+              style: const TextStyle(fontSize: 13),
+            ),
+            Text(
+              sermon['date'] ?? 'Unknown Date',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+        trailing: IconButton(
+          icon: const Icon(Icons.download_outlined),
+          onPressed: () async {
+            // Handle download
+            try {
+              final url = sermon['audio_url'];
+              if (url == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Audio not available')),
+                );
+                return;
+              }
+              // Implement download logic here
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Download failed: $e')),
+              );
+            }
+          },
+        ),
+        onTap: () async {
+          try {
+            final url = sermon['audio_url'];
+            if (url == null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Audio not available')),
+              );
+              return;
+            }
+            
+            // Show audio player bottom sheet
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (context) => Container(
+                height: MediaQuery.of(context).size.height * 0.7,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).scaffoldBackgroundColor,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                child: Column(
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.only(top: 8),
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.audiotrack, size: 48),
+                          const SizedBox(height: 16),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: Text(
+                              sermon['title'] ?? 'Untitled Sermon',
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            sermon['preacher'] ?? 'Unknown Preacher',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                          // Add audio player controls here
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.replay_10),
+                                onPressed: () {
+                                  // Rewind 10 seconds
+                                },
+                              ),
+                              const SizedBox(width: 16),
+                              IconButton(
+                                icon: const Icon(Icons.play_arrow),
+                                iconSize: 48,
+                                onPressed: () {
+                                  // Play/pause audio
+                                },
+                              ),
+                              const SizedBox(width: 16),
+                              IconButton(
+                                icon: const Icon(Icons.forward_10),
+                                onPressed: () {
+                                  // Forward 10 seconds
+                                },
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          // Add progress slider here
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: Column(
+                              children: [
+                                Slider(
+                                  value: 0,
+                                  onChanged: (value) {
+                                    // Update audio position
+                                  },
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        '0:00',
+                                        style: TextStyle(color: Colors.grey[600]),
+                                      ),
+                                      Text(
+                                        '0:00',
+                                        style: TextStyle(color: Colors.grey[600]),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          } catch (e) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Failed to play audio: $e')),
+            );
+          }
+        },
+      ),
     );
   }
 
@@ -135,7 +295,20 @@ class _SermonsScreenState extends State<SermonsScreen> {
                 ),
               ],
               flexibleSpace: FlexibleSpaceBar(
-                title: const Text('Sermons'),
+                title: const Text(
+                  'Sermons',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    shadows: [
+                      Shadow(
+                        offset: Offset(0, 1),
+                        blurRadius: 3.0,
+                        color: Color.fromARGB(255, 0, 0, 0),
+                      ),
+                    ],
+                  ),
+                ),
                 background: Stack(
                   fit: StackFit.expand,
                   children: [
@@ -144,7 +317,16 @@ class _SermonsScreenState extends State<SermonsScreen> {
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
-                          color: Theme.of(context).primaryColor,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Theme.of(context).primaryColor,
+                                Theme.of(context).primaryColor.withOpacity(0.7),
+                              ],
+                            ),
+                          ),
                         );
                       },
                     ),
@@ -168,6 +350,7 @@ class _SermonsScreenState extends State<SermonsScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     TextField(
                       controller: _searchController,
@@ -181,6 +364,8 @@ class _SermonsScreenState extends State<SermonsScreen> {
                           horizontal: 16,
                           vertical: 12,
                         ),
+                        filled: true,
+                        fillColor: Theme.of(context).cardColor,
                       ),
                       onChanged: (value) {
                         _searchSermons(refresh: true);
@@ -191,29 +376,28 @@ class _SermonsScreenState extends State<SermonsScreen> {
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: [
-                          _buildFilterChip(
-                            label: _selectedCategory ?? 'Category',
-                            onTap: () => _showFilterDialog(
+                          FilterChip(
+                            label: Text(_selectedCategory ?? 'Category'),
+                            selected: _selectedCategory != null,
+                            onSelected: (_) => _showFilterDialog(
                               title: 'Select Category',
                               options: _categories,
-                              selected: _selectedCategory != null
-                                  ? [_selectedCategory!]
-                                  : [],
+                              selected: _selectedCategory != null ? [_selectedCategory!] : [],
                               onSelect: (selected) {
                                 setState(() {
-                                  _selectedCategory =
-                                      selected.isNotEmpty ? selected.first : null;
+                                  _selectedCategory = selected.isNotEmpty ? selected.first : null;
                                 });
                                 _searchSermons(refresh: true);
                               },
                             ),
                           ),
                           const SizedBox(width: 8),
-                          _buildFilterChip(
-                            label: _selectedTopics.isEmpty
+                          FilterChip(
+                            label: Text(_selectedTopics.isEmpty
                                 ? 'Topics'
-                                : '${_selectedTopics.length} Topics',
-                            onTap: () => _showFilterDialog(
+                                : '${_selectedTopics.length} Topics'),
+                            selected: _selectedTopics.isNotEmpty,
+                            onSelected: (_) => _showFilterDialog(
                               title: 'Select Topics',
                               options: _topics,
                               selected: _selectedTopics,
@@ -227,18 +411,16 @@ class _SermonsScreenState extends State<SermonsScreen> {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          _buildFilterChip(
-                            label: _selectedPreacher ?? 'Preacher',
-                            onTap: () => _showFilterDialog(
+                          FilterChip(
+                            label: Text(_selectedPreacher ?? 'Preacher'),
+                            selected: _selectedPreacher != null,
+                            onSelected: (_) => _showFilterDialog(
                               title: 'Select Preacher',
                               options: _preachers,
-                              selected: _selectedPreacher != null
-                                  ? [_selectedPreacher!]
-                                  : [],
+                              selected: _selectedPreacher != null ? [_selectedPreacher!] : [],
                               onSelect: (selected) {
                                 setState(() {
-                                  _selectedPreacher =
-                                      selected.isNotEmpty ? selected.first : null;
+                                  _selectedPreacher = selected.isNotEmpty ? selected.first : null;
                                 });
                                 _searchSermons(refresh: true);
                               },
@@ -251,14 +433,20 @@ class _SermonsScreenState extends State<SermonsScreen> {
                 ),
               ),
             ),
-            if (_sermons.isEmpty && !_isLoading)
+            if (_isLoading)
+              const SliverFillRemaining(
+                child: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            else if (_sermons.isEmpty)
               SliverFillRemaining(
                 child: Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Icon(
-                        Icons.search_off,
+                        Icons.video_library_outlined,
                         size: 64,
                         color: Colors.grey,
                       ),
@@ -270,32 +458,22 @@ class _SermonsScreenState extends State<SermonsScreen> {
                       const SizedBox(height: 8),
                       Text(
                         'Try adjusting your filters or search terms',
-                        style: Theme.of(context).textTheme.bodyMedium,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.grey[600],
+                        ),
                       ),
                     ],
                   ),
                 ),
               )
             else
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    if (index >= _sermons.length) {
-                      if (_isLoading) {
-                        return const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: CircularProgressIndicator(),
-                          ),
-                        );
-                      }
-                      return null;
-                    }
-
-                    final sermon = _sermons[index];
-                    return _buildSermonCard(sermon);
-                  },
-                  childCount: _sermons.length + (_isLoading ? 1 : 0),
+              SliverPadding(
+                padding: const EdgeInsets.only(bottom: 16),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => _buildSermonCard(_sermons[index]),
+                    childCount: _sermons.length,
+                  ),
                 ),
               ),
           ],

@@ -12,7 +12,9 @@ dependencies:
     sdk: flutter
   supabase_flutter: ^1.10.25
   provider: ^6.1.1
+  # Audio player
   just_audio: ^0.9.36
+  just_audio_background: ^0.0.1-beta.11
   carousel_slider: ^5.0.0
   timeago: ^3.6.0
   flutter_markdown: ^0.6.18
@@ -35,7 +37,6 @@ dependencies:
   flutter_svg: ^2.0.9
   sqflite: ^2.3.3
   pdf: ^3.10.8
-  just_audio_background: ^0.0.1-beta.11
   audio_session: ^0.1.18
   rxdart: ^0.27.7
   intl: ^0.18.1
