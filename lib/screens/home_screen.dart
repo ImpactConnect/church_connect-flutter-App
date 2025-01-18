@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase_sermon_service.dart';
 import '../models/sermon.dart';
+import 'give/give_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -214,7 +215,46 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: _buildBottomNavigation(),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: Theme.of(context).primaryColor,
+        unselectedItemColor: Colors.grey,
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              // Home
+              break;
+            case 1:
+              Navigator.pushNamed(context, '/bible');
+              break;
+            case 2:
+              Navigator.pushNamed(context, '/sermons');
+              break;
+            case 3:
+              Navigator.pushNamed(context, '/give');
+              break;
+          }
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.book),
+            label: 'Bible',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.headphones),
+            label: 'Sermons',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite),
+            label: 'Give',
+          ),
+        ],
+      ),
     );
   }
 
@@ -368,15 +408,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 context,
                 feature['title'],
                 feature['icon'],
-                () {
-                  if (feature['route'] == '/live-service') {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Live service coming soon!')),
-                    );
-                  } else {
-                    Navigator.pushNamed(context, feature['route']);
-                  }
-                },
+                () => Navigator.pushNamed(context, feature['route']),
                 color: feature['color'],
               ))
           .toList(),
@@ -425,7 +457,12 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   final List<Map<String, dynamic>> _engagementFeatures = [
-    {'title': 'Prayer Wall', 'icon': Icons.people, 'route': '/prayer-wall', 'color': Colors.teal},
+    {
+      'title': 'Devotional',
+      'icon': Icons.menu_book,
+      'route': '/devotional',
+      'color': Colors.indigo
+    },
     {'title': 'Give', 'icon': Icons.favorite, 'route': '/give', 'color': Colors.red},
     {'title': 'News', 'icon': Icons.campaign, 'route': '/announcements', 'color': Colors.orange},
     {'title': 'More', 'icon': Icons.more_horiz, 'route': '/more', 'color': Colors.grey},
@@ -1206,47 +1243,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
         ],
       ),
-    );
-  }
-
-  Widget _buildBottomNavigation() {
-    return BottomNavigationBar(
-      currentIndex: _selectedIndex,
-      onTap: (index) {
-        switch (index) {
-          case 0:
-            // Home
-            break;
-          case 1:
-            Navigator.pushNamed(context, '/sermons');
-            break;
-          case 2:
-            Navigator.pushNamed(context, '/bible');
-            break;
-          case 3:
-            Navigator.pushNamed(context, '/notes');
-            break;
-        }
-      },
-      type: BottomNavigationBarType.fixed,
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: 'Home',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.headphones),
-          label: 'Sermons',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.book),
-          label: 'Bible',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.note),
-          label: 'Notes',
-        ),
-      ],
     );
   }
 }
