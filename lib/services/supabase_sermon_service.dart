@@ -1,7 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/sermon.dart';
@@ -395,7 +393,8 @@ class SupabaseSermonService {
       var query = _supabase.from('sermons').select();
 
       if (searchQuery != null && searchQuery.isNotEmpty) {
-        query = query.or('title.ilike.%$searchQuery%,description.ilike.%$searchQuery%');
+        query = query
+            .or('title.ilike.%$searchQuery%,description.ilike.%$searchQuery%');
       }
 
       if (category != null && category.isNotEmpty) {
@@ -426,7 +425,7 @@ class SupabaseSermonService {
           data['is_downloaded'] = downloadedSermons.containsKey(data['id']);
           data['local_audio_path'] = downloadedSermons[data['id']];
           data['is_favorite'] = favoriteIds.contains(data['id']);
-          
+
           final sermon = Sermon.fromSupabase(data);
           sermons.add(sermon);
         } catch (e) {
@@ -453,13 +452,12 @@ class SupabaseSermonService {
     if (favoriteIds.isEmpty) return [];
 
     try {
-      var query = _supabase
-          .from('sermons')
-          .select()
-          .in_('id', favoriteIds.toList());
+      var query =
+          _supabase.from('sermons').select().in_('id', favoriteIds.toList());
 
       if (searchQuery != null && searchQuery.isNotEmpty) {
-        query = query.or('title.ilike.%$searchQuery%,description.ilike.%$searchQuery%');
+        query = query
+            .or('title.ilike.%$searchQuery%,description.ilike.%$searchQuery%');
       }
 
       if (category != null && category.isNotEmpty) {
@@ -486,7 +484,7 @@ class SupabaseSermonService {
           data['is_downloaded'] = downloadedSermons.containsKey(data['id']);
           data['local_audio_path'] = downloadedSermons[data['id']];
           data['is_favorite'] = true;
-          
+
           final sermon = Sermon.fromSupabase(data);
           sermons.add(sermon);
         } catch (e) {
@@ -513,13 +511,12 @@ class SupabaseSermonService {
       final downloads = await _getDownloadedSermons();
       if (downloads.isEmpty) return [];
 
-      var query = _supabase
-          .from('sermons')
-          .select()
-          .in_('id', downloads.keys.toList());
+      var query =
+          _supabase.from('sermons').select().in_('id', downloads.keys.toList());
 
       if (searchQuery != null && searchQuery.isNotEmpty) {
-        query = query.or('title.ilike.%$searchQuery%,description.ilike.%$searchQuery%');
+        query = query
+            .or('title.ilike.%$searchQuery%,description.ilike.%$searchQuery%');
       }
 
       if (category != null && category.isNotEmpty) {
@@ -544,7 +541,7 @@ class SupabaseSermonService {
           data['is_downloaded'] = true;
           data['local_audio_path'] = downloads[data['id']];
           data['is_favorite'] = await isSermonFavorite(data['id']);
-          
+
           final sermon = Sermon.fromSupabase(data);
           sermons.add(sermon);
         } catch (e) {

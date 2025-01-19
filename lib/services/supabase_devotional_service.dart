@@ -13,11 +13,12 @@ class SupabaseDevotionalService {
     return Devotional.fromJson(response);
   }
 
-  Future<List<Devotional>> getRecentDevotionals({int limit = 7}) async {
+  Future<List<Devotional>> getRecentDevotionals({int limit = 7, int offset = 0}) async {
     final response = await _supabase
         .from('devotionals')
         .select()
         .order('date', ascending: false)
+        .range(offset, offset + limit - 1)
         .limit(limit);
     
     return List<Devotional>.from(

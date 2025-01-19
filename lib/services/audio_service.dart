@@ -16,15 +16,20 @@ class AudioService {
   final _loadingController = BehaviorSubject<bool>.seeded(false);
   final _isInitializedController = BehaviorSubject<bool>.seeded(false);
 
-  Stream<Duration?> get positionStream => _audioPlayer?.positionStream ?? Stream.value(null);
-  Stream<Duration?> get durationStream => _audioPlayer?.durationStream ?? Stream.value(null);
-  Stream<PlayerState> get playerStateStream => _audioPlayer?.playerStateStream ?? Stream.value(PlayerState(false, ProcessingState.idle));
+  Stream<Duration?> get positionStream =>
+      _audioPlayer?.positionStream ?? Stream.value(null);
+  Stream<Duration?> get durationStream =>
+      _audioPlayer?.durationStream ?? Stream.value(null);
+  Stream<PlayerState> get playerStateStream =>
+      _audioPlayer?.playerStateStream ??
+      Stream.value(PlayerState(false, ProcessingState.idle));
   Stream<double> get playbackSpeedStream => _playbackSpeedController.stream;
   Stream<double> get volumeStream => _volumeController.stream;
   Stream<String?> get errorStream => _errorController.stream;
   Stream<bool> get loadingStream => _loadingController.stream;
   Stream<bool> get isInitializedStream => _isInitializedController.stream;
-  Stream<bool> get isPlayingStream => _audioPlayer?.playingStream ?? Stream.value(false);
+  Stream<bool> get isPlayingStream =>
+      _audioPlayer?.playingStream ?? Stream.value(false);
 
   Stream<PositionData> get positionDataStream =>
       Rx.combineLatest3<Duration?, Duration?, Duration?, PositionData>(
@@ -71,10 +76,10 @@ class AudioService {
             ),
           ),
         );
-        
+
         await _audioPlayer!.setVolume(_volumeController.value);
         await _audioPlayer!.setSpeed(_playbackSpeedController.value);
-        
+
         _isInitializedController.add(true);
       } catch (e) {
         _errorController.add('Error loading audio: $e');
@@ -166,8 +171,8 @@ class AudioService {
     if (!(_isInitializedController.value)) return;
 
     try {
-      final position = await _audioPlayer?.position;
-      final duration = await _audioPlayer?.duration;
+      final position = _audioPlayer?.position;
+      final duration = _audioPlayer?.duration;
       if (position != null && duration != null) {
         final newPosition = position + const Duration(seconds: 10);
         if (newPosition < duration) {
@@ -186,7 +191,7 @@ class AudioService {
     if (!(_isInitializedController.value)) return;
 
     try {
-      final position = await _audioPlayer?.position;
+      final position = _audioPlayer?.position;
       if (position != null) {
         final newPosition = position - const Duration(seconds: 10);
         if (newPosition > Duration.zero) {

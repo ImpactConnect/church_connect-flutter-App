@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 class LiveServiceScreen extends StatefulWidget {
   const LiveServiceScreen({super.key});
@@ -18,72 +18,110 @@ class _LiveServiceScreenState extends State<LiveServiceScreen> {
     _initializePlayer();
   }
 
-  void _initializePlayer() {
-    _controller = YoutubePlayerController(
-      initialVideoId: 'jfKfPfyJRdk',
-      flags: const YoutubePlayerFlags(
-        autoPlay: true,
+  Future<void> _initializePlayer() async {
+    _controller = YoutubePlayerController.fromVideoId(
+      videoId: 'jfKfPfyJRdk',
+      autoPlay: true,
+      params: const YoutubePlayerParams(
+        showFullscreenButton: true,
+        showControls: true,
         mute: false,
-        isLive: true,
-        forceHD: true,
+        showVideoAnnotations: false,
         enableCaption: false,
-        hideControls: false,
       ),
     );
-    setState(() {
-      _isLoading = false;
-    });
+    setState(() => _isLoading = false);
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controller.close();
     super.dispose();
+  }
+
+  Future<void> _refreshStream() async {
+    setState(() => _isLoading = true);
+    await _initializePlayer();
   }
 
   @override
   Widget build(BuildContext context) {
-    return YoutubePlayerBuilder(
-      player: YoutubePlayer(
-        controller: _controller,
-        showVideoProgressIndicator: true,
-        progressIndicatorColor: Colors.red,
-        progressColors: const ProgressBarColors(
-          playedColor: Colors.red,
-          handleColor: Colors.redAccent,
-        ),
-        onReady: () {
-          setState(() {
-            _isLoading = false;
-          });
-        },
-      ),
-      builder: (context, player) {
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('Live Service'),
-          ),
-          body: Column(
-            children: [
-              player,
-              if (_isLoading)
-                const Expanded(
-                  child: Center(
-                    child: CircularProgressIndicator(),
+    return Scaffold(
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) {
+          return [
+            SliverAppBar(
+              floating: true,
+              pinned: true,
+              expandedHeight: 180,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.refresh),
+                  onPressed: _refreshStream,
+                  tooltip: 'Refresh stream',
+                ),
+              ],
+              flexibleSpace: FlexibleSpaceBar(
+                title: const Text(
+                  'Live Service',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    shadows: [
+                      Shadow(
+                        offset: Offset(0, 1),
+                        blurRadius: 3.0,
+                        color: Color.fromARGB(255, 0, 0, 0),
+                      ),
+                    ],
                   ),
                 ),
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(
-                  'Welcome to our live service. Please ensure you have a stable internet connection for the best experience.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16),
+                background: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.asset(
+                      'assets/images/live_service_header.jpg',
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Theme.of(context).primaryColor,
+                                Theme.of(context).primaryColor.withOpacity(0.7),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withOpacity(0.7),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        );
-      },
+            ),
+          ];
+        },
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : YoutubePlayer(
+                controller: _controller,
+                aspectRatio: 16 / 9,
+              ),
+      ),
     );
   }
 }

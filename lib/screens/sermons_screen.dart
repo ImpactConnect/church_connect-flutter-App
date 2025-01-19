@@ -17,9 +17,9 @@ class _SermonsScreenState extends State<SermonsScreen> {
   String? _selectedCategory;
   List<String> _selectedTopics = [];
   String? _selectedPreacher;
-  List<String> _categories = [];
-  List<String> _topics = [];
-  List<String> _preachers = [];
+  final List<String> _categories = [];
+  final List<String> _topics = [];
+  final List<String> _preachers = [];
 
   @override
   void initState() {
@@ -151,7 +151,7 @@ class _SermonsScreenState extends State<SermonsScreen> {
               );
               return;
             }
-            
+
             // Show audio player bottom sheet
             showModalBottomSheet(
               context: context,
@@ -161,7 +161,8 @@ class _SermonsScreenState extends State<SermonsScreen> {
                 height: MediaQuery.of(context).size.height * 0.7,
                 decoration: BoxDecoration(
                   color: Theme.of(context).scaffoldBackgroundColor,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(20)),
                 ),
                 child: Column(
                   children: [
@@ -240,17 +241,21 @@ class _SermonsScreenState extends State<SermonsScreen> {
                                   },
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 8),
                                   child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
                                         '0:00',
-                                        style: TextStyle(color: Colors.grey[600]),
+                                        style:
+                                            TextStyle(color: Colors.grey[600]),
                                       ),
                                       Text(
                                         '0:00',
-                                        style: TextStyle(color: Colors.grey[600]),
+                                        style:
+                                            TextStyle(color: Colors.grey[600]),
                                       ),
                                     ],
                                   ),
@@ -382,10 +387,14 @@ class _SermonsScreenState extends State<SermonsScreen> {
                             onSelected: (_) => _showFilterDialog(
                               title: 'Select Category',
                               options: _categories,
-                              selected: _selectedCategory != null ? [_selectedCategory!] : [],
+                              selected: _selectedCategory != null
+                                  ? [_selectedCategory!]
+                                  : [],
                               onSelect: (selected) {
                                 setState(() {
-                                  _selectedCategory = selected.isNotEmpty ? selected.first : null;
+                                  _selectedCategory = selected.isNotEmpty
+                                      ? selected.first
+                                      : null;
                                 });
                                 _searchSermons(refresh: true);
                               },
@@ -417,10 +426,14 @@ class _SermonsScreenState extends State<SermonsScreen> {
                             onSelected: (_) => _showFilterDialog(
                               title: 'Select Preacher',
                               options: _preachers,
-                              selected: _selectedPreacher != null ? [_selectedPreacher!] : [],
+                              selected: _selectedPreacher != null
+                                  ? [_selectedPreacher!]
+                                  : [],
                               onSelect: (selected) {
                                 setState(() {
-                                  _selectedPreacher = selected.isNotEmpty ? selected.first : null;
+                                  _selectedPreacher = selected.isNotEmpty
+                                      ? selected.first
+                                      : null;
                                 });
                                 _searchSermons(refresh: true);
                               },
@@ -459,8 +472,8 @@ class _SermonsScreenState extends State<SermonsScreen> {
                       Text(
                         'Try adjusting your filters or search terms',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[600],
-                        ),
+                              color: Colors.grey[600],
+                            ),
                       ),
                     ],
                   ),

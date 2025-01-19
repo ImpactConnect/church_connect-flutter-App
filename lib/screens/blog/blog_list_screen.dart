@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../models/blog.dart';
 import '../../services/blog_service.dart';
 import 'blog_detail_screen.dart';
-import 'package:timeago/timeago.dart' as timeago;
 
 class BlogListScreen extends StatefulWidget {
   const BlogListScreen({Key? key}) : super(key: key);
@@ -15,9 +14,9 @@ class _BlogListScreenState extends State<BlogListScreen> {
   final _blogService = BlogService();
   final _searchController = TextEditingController();
   final _scrollController = ScrollController();
-  
-  List<Blog> _blogs = [];  
-  List<String>? _selectedTags;  
+
+  List<Blog> _blogs = [];
+  List<String>? _selectedTags;
   bool _isLoading = false;
   String? _error;
   int _currentPage = 1;
@@ -27,7 +26,7 @@ class _BlogListScreenState extends State<BlogListScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedTags = [];  
+    _selectedTags = [];
     _scrollController.addListener(_onScroll);
     _loadBlogs();
   }
@@ -89,7 +88,7 @@ class _BlogListScreenState extends State<BlogListScreen> {
         searchQuery: _searchController.text,
         tags: _selectedTags,
       );
-      
+
       setState(() {
         _blogs.addAll(blogs);
         _hasMore = blogs.length >= _pageSize;
@@ -141,7 +140,8 @@ class _BlogListScreenState extends State<BlogListScreen> {
           children: [
             if (blog.thumbnailUrl != null)
               ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(4)),
                 child: AspectRatio(
                   aspectRatio: 16 / 9,
                   child: Image.network(
@@ -203,9 +203,11 @@ class _BlogListScreenState extends State<BlogListScreen> {
                         ),
                         onPressed: () async {
                           try {
-                            final updatedBlog = await _blogService.toggleLike(blog);
+                            final updatedBlog =
+                                await _blogService.toggleLike(blog);
                             setState(() {
-                              final index = _blogs.indexWhere((b) => b.id == blog.id);
+                              final index =
+                                  _blogs.indexWhere((b) => b.id == blog.id);
                               if (index != -1) {
                                 _blogs[index] = updatedBlog;
                               }
@@ -254,7 +256,8 @@ class _BlogListScreenState extends State<BlogListScreen> {
                             tag,
                             style: const TextStyle(fontSize: 12),
                           ),
-                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           labelPadding: EdgeInsets.zero,
                         );
@@ -272,98 +275,164 @@ class _BlogListScreenState extends State<BlogListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Blog'),
-        elevation: 0,
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Search blogs...',
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  onSubmitted: _onSearchSubmitted,
-                ),
-                const SizedBox(height: 8),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      'Church',
-                      'Worship',
-                      'Prayer',
-                      'Bible Study',
-                      'Community',
-                      'Events',
-                    ].map((tag) {
-                      final isSelected = _selectedTags?.contains(tag) ?? false;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: FilterChip(
-                          label: Text(tag),
-                          selected: isSelected,
-                          onSelected: (selected) => _handleTagSelection(tag),
-                          backgroundColor: Colors.grey[200],
-                          selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
-                          labelStyle: TextStyle(
-                            color: isSelected
-                                ? Theme.of(context).primaryColor
-                                : Colors.black87,
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) {
+          return [
+            SliverAppBar(
+              floating: true,
+              pinned: true,
+              expandedHeight: 180,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.refresh),
+                  onPressed: _loadBlogs,
+                  tooltip: 'Refresh blogs',
                 ),
               ],
-            ),
-          ),
-          if (_error != null)
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                _error!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            ),
-          Expanded(
-            child: _isLoading && _blogs.isEmpty
-                ? const Center(child: CircularProgressIndicator())
-                : RefreshIndicator(
-                    onRefresh: () async {
-                      _currentPage = 1;
-                      await _loadBlogs();
-                    },
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.only(bottom: 16),
-                      itemCount: _blogs.length + (_hasMore ? 1 : 0),
-                      itemBuilder: (context, index) {
-                        if (index == _blogs.length) {
-                          return const Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(16),
-                              child: CircularProgressIndicator(),
+              flexibleSpace: FlexibleSpaceBar(
+                title: const Text(
+                  'Blog',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    shadows: [
+                      Shadow(
+                        offset: Offset(0, 1),
+                        blurRadius: 3.0,
+                        color: Color.fromARGB(255, 0, 0, 0),
+                      ),
+                    ],
+                  ),
+                ),
+                background: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.asset(
+                      'assets/images/blog_header.jpg',
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Theme.of(context).primaryColor,
+                                Theme.of(context).primaryColor.withOpacity(0.7),
+                              ],
                             ),
-                          );
-                        }
-
-                        final blog = _blogs[index];
-                        return _buildBlogCard(blog);
+                          ),
+                        );
                       },
                     ),
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withOpacity(0.7),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ];
+        },
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Search blogs...',
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    onSubmitted: _onSearchSubmitted,
                   ),
-          ),
-        ],
+                  const SizedBox(height: 8),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        'Church',
+                        'Worship',
+                        'Prayer',
+                        'Bible Study',
+                        'Community',
+                        'Events',
+                      ].map((tag) {
+                        final isSelected = _selectedTags?.contains(tag) ?? false;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: FilterChip(
+                            label: Text(tag),
+                            selected: isSelected,
+                            onSelected: (selected) => _handleTagSelection(tag),
+                            backgroundColor: Colors.grey[200],
+                            selectedColor:
+                                Theme.of(context).primaryColor.withOpacity(0.2),
+                            labelStyle: TextStyle(
+                              color: isSelected
+                                  ? Theme.of(context).primaryColor
+                                  : Colors.black87,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (_error != null)
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  _error!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              ),
+            Expanded(
+              child: _isLoading && _blogs.isEmpty
+                  ? const Center(child: CircularProgressIndicator())
+                  : RefreshIndicator(
+                      onRefresh: () async {
+                        _currentPage = 1;
+                        await _loadBlogs();
+                      },
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.only(bottom: 16),
+                        itemCount: _blogs.length + (_hasMore ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          if (index == _blogs.length) {
+                            return const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(16),
+                                child: CircularProgressIndicator(),
+                              ),
+                            );
+                          }
+
+                          final blog = _blogs[index];
+                          return _buildBlogCard(blog);
+                        },
+                      ),
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }

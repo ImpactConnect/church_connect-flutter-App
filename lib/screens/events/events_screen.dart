@@ -502,71 +502,113 @@ Join us for this amazing event!
   Widget build(BuildContext context) {
     return Scaffold(
       body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) => [
-          SliverAppBar(
-            expandedHeight: 120,
-            floating: true,
-            pinned: true,
-            title: const Text('Church Events'),
-            bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(60),
-              child: _buildSearchBar(),
-            ),
-            flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Theme.of(context).primaryColor,
-                      Theme.of(context).primaryColor.withOpacity(0.8),
+        headerSliverBuilder: (context, innerBoxIsScrolled) {
+          return [
+            SliverAppBar(
+              floating: true,
+              pinned: true,
+              expandedHeight: 180,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.refresh),
+                  onPressed: () => _fetchEvents(category: _selectedCategory),
+                  tooltip: 'Refresh events',
+                ),
+              ],
+              flexibleSpace: FlexibleSpaceBar(
+                title: const Text(
+                  'Events',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    shadows: [
+                      Shadow(
+                        offset: Offset(0, 1),
+                        blurRadius: 3.0,
+                        color: Color.fromARGB(255, 0, 0, 0),
+                      ),
                     ],
                   ),
                 ),
-              ),
-            ),
-          ),
-        ],
-        body: Column(
-          children: [
-            _buildEventCategoryFilter(),
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: () => _fetchEvents(category: _selectedCategory),
-                child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _filteredEvents.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.event_busy,
-                                  size: 64,
-                                  color: Colors.grey[400],
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  _isSearching
-                                      ? 'No events match your search'
-                                      : 'No events found',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
+                background: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.asset(
+                      'assets/images/events_header.jpg',
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Theme.of(context).primaryColor,
+                                Theme.of(context).primaryColor.withOpacity(0.7),
                               ],
                             ),
-                          )
-                        : ListView.builder(
-                            padding: const EdgeInsets.only(top: 8, bottom: 16),
-                            itemCount: _filteredEvents.length,
-                            itemBuilder: (context, index) {
-                              return _buildEventCard(_filteredEvents[index]);
-                            },
                           ),
+                        );
+                      },
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withOpacity(0.7),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
+            ),
+          ];
+        },
+        body: Column(
+          children: [
+            _buildSearchBar(),
+            _buildEventCategoryFilter(),
+            Expanded(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : RefreshIndicator(
+                      onRefresh: () => _fetchEvents(category: _selectedCategory),
+                      child: _filteredEvents.isEmpty
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.event_busy,
+                                    size: 64,
+                                    color: Colors.grey[400],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    _isSearching
+                                        ? 'No events match your search'
+                                        : 'No events found',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : ListView.builder(
+                              padding: const EdgeInsets.only(top: 8, bottom: 16),
+                              itemCount: _filteredEvents.length,
+                              itemBuilder: (context, index) {
+                                return _buildEventCard(_filteredEvents[index]);
+                              },
+                            ),
+                    ),
             ),
           ],
         ),

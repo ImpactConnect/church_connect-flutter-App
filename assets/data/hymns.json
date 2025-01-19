@@ -1,0 +1,32 @@
+[
+  {
+    "number": 1,
+    "title": "Holy, Holy, Holy",
+    "author": "Reginald Heber",
+    "tune": "Nicaea",
+    "verses": [
+      "Holy, holy, holy! Lord God Almighty!\nEarly in the morning our song shall rise to Thee;\nHoly, holy, holy! merciful and mighty!\nGod in three persons, blessed Trinity!",
+      "Holy, holy, holy! All the saints adore Thee,\nCasting down their golden crowns around the glassy sea;\nCherubim and seraphim falling down before Thee,\nWhich wert, and art, and evermore shalt be.",
+      "Holy, holy, holy! Though the darkness hide Thee,\nThough the eye of sinful man Thy glory may not see;\nOnly Thou art holy; there is none beside Thee,\nPerfect in power, in love, and purity."
+    ]
+  },
+  {
+    "number": 2,
+    "title": "Amazing Grace",
+    "author": "John Newton",
+    "verses": [
+      "Amazing grace! How sweet the sound\nThat saved a wretch like me!\nI once was lost, but now am found;\nWas blind, but now I see.",
+      "Through many dangers, toils and snares,\nI have already come;\n'Tis grace hath brought me safe thus far,\nAnd grace will lead me home.",
+      "When we've been there ten thousand years,\nBright shining as the sun,\nWe've no less days to sing God's praise\nThan when we'd first begun."
+    ]
+  },
+  {
+    "number": 3,
+    "title": "Great Is Thy Faithfulness",
+    "author": "Thomas Chisholm",
+    "verses": [
+      "Great is Thy faithfulness, O God my Father\nThere is no shadow of turning with Thee\nThou changest not, Thy compassions, they fail not\nAs Thou hast been, Thou forever will be"
+    ],
+    "chorus": "Great is Thy faithfulness\nGreat is Thy faithfulness\nMorning by morning new mercies I see\nAll I have needed Thy hand hath provided\nGreat is Thy faithfulness, Lord, unto me"
+  }
+]

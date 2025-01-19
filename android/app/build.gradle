@@ -51,6 +51,9 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true
+        manifestPlaceholders = [
+            inAppWebViewNamespace: "com.pichillilorenzo.flutter_inappwebview"
+        ]
     }
 
     buildTypes {

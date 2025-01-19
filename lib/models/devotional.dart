@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 class Devotional {
   final String id;
   final String title;

@@ -16,9 +16,9 @@ import 'screens/auth/register_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/community/community_screen.dart';
 import 'screens/blog/blog_list_screen.dart';
-import 'screens/blog/blog_detail_screen.dart';
 import 'screens/give/give_screen.dart';
 import 'screens/devotional/devotional_screen.dart';
+import 'screens/hymnal/hymnal_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -67,11 +67,13 @@ class MyApp extends StatelessWidget {
           '/blog': (context) => const BlogListScreen(),
           '/give': (context) => const GiveScreen(),
           '/videos': (context) => _buildComingSoonScreen('Videos'),
-          '/hymnal': (context) => _buildComingSoonScreen('Hymnal'),
+          '/hymnal': (context) => const HymnalScreen(),
           '/gallery': (context) => _buildComingSoonScreen('Gallery'),
-          '/announcements': (context) => _buildComingSoonScreen('Announcements'),
+          '/announcements': (context) =>
+              _buildComingSoonScreen('Announcements'),
           '/devotional': (context) => const DevotionalScreen(),
-          '/connect-groups': (context) => _buildComingSoonScreen('Connect Groups'),
+          '/connect-groups': (context) =>
+              _buildComingSoonScreen('Connect Groups'),
           '/testimonies': (context) => _buildComingSoonScreen('Testimonies'),
           '/prayer-wall': (context) => _buildComingSoonScreen('Prayer Wall'),
         },

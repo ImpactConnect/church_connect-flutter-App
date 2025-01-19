@@ -16,16 +16,17 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final _supabase = Supabase.instance.client;
   final _sermonService = SupabaseSermonService();
-  final int _selectedIndex = 0;
-  String verseOfDay = '';
-  String verseReference = '';
-  bool _isLoadingVerse = true;
-  String _errorMessage = '';
-  Sermon? _latestSermon;
-  bool _isLoadingSermon = true;
   List<Map<String, dynamic>> _carouselItems = [];
   bool _isLoadingCarousel = true;
+  String? _verseOfTheDay;
+  bool _isLoadingVerse = true;
+  int _selectedIndex = 0;
+  String verseOfDay = '';
+  String verseReference = '';
+  bool _isLoadingSermon = true;
+  Sermon? _latestSermon;
 
   @override
   void initState() {
@@ -60,11 +61,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadCarouselItems() async {
     try {
       setState(() => _isLoadingCarousel = true);
-      final response = await Supabase.instance.client
+      final response = await _supabase
           .from('carousel_items')
           .select()
           .order('created_at', ascending: false);
-      
+
       setState(() {
         _carouselItems = List<Map<String, dynamic>>.from(response);
         _isLoadingCarousel = false;
@@ -78,11 +79,12 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadVerseOfDay() async {
     setState(() {
       _isLoadingVerse = true;
-      _errorMessage = '';
+      _verseOfTheDay = '';
     });
 
     try {
-      final String response = await rootBundle.loadString('assets/data/kjv.json');
+      final String response =
+          await rootBundle.loadString('assets/data/kjv.json');
       final List<dynamic> verses = json.decode(response);
 
       if (verses.isEmpty) {
@@ -100,7 +102,6 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     } catch (e) {
       setState(() {
-        _errorMessage = 'Error loading verse: $e';
         _isLoadingVerse = false;
       });
     }
@@ -162,7 +163,8 @@ class _HomeScreenState extends State<HomeScreen> {
               Stack(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+                    icon: const Icon(Icons.notifications_outlined,
+                        color: Colors.white),
                     onPressed: () {
                       // TODO: Implement notifications
                     },
@@ -216,23 +218,29 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
         type: BottomNavigationBarType.fixed,
+        currentIndex: _selectedIndex,
         selectedItemColor: Theme.of(context).primaryColor,
         unselectedItemColor: Colors.grey,
         onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
           switch (index) {
             case 0:
-              // Home
+              // Already on home
               break;
             case 1:
-              Navigator.pushNamed(context, '/bible');
+              Navigator.pushNamed(context, '/sermons');
               break;
             case 2:
-              Navigator.pushNamed(context, '/sermons');
+              Navigator.pushNamed(context, '/devotional');
               break;
             case 3:
               Navigator.pushNamed(context, '/give');
+              break;
+            case 4:
+              Navigator.pushNamed(context, '/hymnal');
               break;
           }
         },
@@ -242,16 +250,20 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.book),
-            label: 'Bible',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.headphones),
             label: 'Sermons',
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.menu_book),
+            label: 'Devotional',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.favorite),
             label: 'Give',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.music_note),
+            label: 'Hymns',
           ),
         ],
       ),
@@ -259,46 +271,66 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildQuickActions() {
-    return Container(
-      height: 100,
-      margin: const EdgeInsets.symmetric(vertical: 16),
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        children: [
-          _buildQuickActionCard(
-            'Live Now',
-            Icons.live_tv,
-            Colors.red,
-            () => Navigator.pushNamed(context, '/live-service'),
-            isLive: true,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(left: 16.0, bottom: 16.0),
+          child: Text(
+            'Quick Actions',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-          _buildQuickActionCard(
-            'Latest Sermon',
-            Icons.headphones,
-            Colors.blue,
-            () => Navigator.pushNamed(context, '/sermons'),
+        ),
+        SizedBox(
+          height: 100,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            children: [
+              _buildQuickActionCard(
+                'Live Now',
+                Icons.live_tv,
+                Colors.red,
+                () => Navigator.pushNamed(context, '/live-service'),
+                isLive: true,
+              ),
+              _buildQuickActionCard(
+                'Sermons',
+                Icons.headphones,
+                Colors.blue,
+                () => Navigator.pushNamed(context, '/sermons'),
+              ),
+              _buildQuickActionCard(
+                'Bible',
+                Icons.book,
+                Colors.purple,
+                () => Navigator.pushNamed(context, '/bible'),
+              ),
+              _buildQuickActionCard(
+                'Devotional',
+                Icons.menu_book,
+                Colors.indigo,
+                () => Navigator.pushNamed(context, '/devotional'),
+              ),
+              _buildQuickActionCard(
+                'Give',
+                Icons.favorite,
+                Colors.pink,
+                () => Navigator.pushNamed(context, '/give'),
+              ),
+              _buildQuickActionCard(
+                'Blog',
+                Icons.article,
+                Colors.deepPurple,
+                () => Navigator.pushNamed(context, '/blog'),
+              ),
+            ],
           ),
-          _buildQuickActionCard(
-            'Blog',
-            Icons.article,
-            Colors.deepPurple,
-            () => Navigator.pushNamed(context, '/blog'),
-          ),
-          _buildQuickActionCard(
-            'Give',
-            Icons.favorite,
-            Colors.pink,
-            () => Navigator.pushNamed(context, '/give'),
-          ),
-          _buildQuickActionCard(
-            'Prayer',
-            Icons.people,
-            Colors.teal,
-            () => Navigator.pushNamed(context, '/prayer-wall'),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -416,10 +448,30 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   final List<Map<String, dynamic>> _coreFeatures = [
-    {'title': 'Bible', 'icon': Icons.book, 'route': '/bible', 'color': Colors.purple},
-    {'title': 'Sermons', 'icon': Icons.headphones, 'route': '/sermons', 'color': Colors.blue},
-    {'title': 'Events', 'icon': Icons.event, 'route': '/events', 'color': Colors.amber},
-    {'title': 'Notes', 'icon': Icons.note, 'route': '/notes', 'color': Colors.cyan},
+    {
+      'title': 'Bible',
+      'icon': Icons.book,
+      'route': '/bible',
+      'color': Colors.purple
+    },
+    {
+      'title': 'Sermons',
+      'icon': Icons.headphones,
+      'route': '/sermons',
+      'color': Colors.blue
+    },
+    {
+      'title': 'Events',
+      'icon': Icons.event,
+      'route': '/events',
+      'color': Colors.amber
+    },
+    {
+      'title': 'Notes',
+      'icon': Icons.note,
+      'route': '/notes',
+      'color': Colors.cyan
+    },
   ];
 
   final List<Map<String, dynamic>> _mediaFeatures = [
@@ -450,10 +502,24 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   final List<Map<String, dynamic>> _communityFeatures = [
-    {'title': 'Community', 'icon': Icons.forum, 'route': '/community', 'color': Colors.blue},
-    {'title': 'Blog', 'icon': Icons.article, 'route': '/blog', 'color': Colors.deepPurple},
-    {'title': 'Testimonies', 'icon': Icons.stars, 'route': '/testimonies', 'color': Colors.pink},
-    {'title': 'Connect', 'icon': Icons.groups, 'route': '/connect-groups', 'color': Colors.teal},
+    {
+      'title': 'Community',
+      'icon': Icons.forum,
+      'route': '/community',
+      'color': Colors.blue
+    },
+    {
+      'title': 'Blog',
+      'icon': Icons.article,
+      'route': '/blog',
+      'color': Colors.deepPurple
+    },
+    {
+      'title': 'Testimonies',
+      'icon': Icons.stars,
+      'route': '/testimonies',
+      'color': Colors.pink
+    },
   ];
 
   final List<Map<String, dynamic>> _engagementFeatures = [
@@ -463,9 +529,24 @@ class _HomeScreenState extends State<HomeScreen> {
       'route': '/devotional',
       'color': Colors.indigo
     },
-    {'title': 'Give', 'icon': Icons.favorite, 'route': '/give', 'color': Colors.red},
-    {'title': 'News', 'icon': Icons.campaign, 'route': '/announcements', 'color': Colors.orange},
-    {'title': 'More', 'icon': Icons.more_horiz, 'route': '/more', 'color': Colors.grey},
+    {
+      'title': 'Give',
+      'icon': Icons.favorite,
+      'route': '/give',
+      'color': Colors.red
+    },
+    {
+      'title': 'News',
+      'icon': Icons.campaign,
+      'route': '/announcements',
+      'color': Colors.orange
+    },
+    {
+      'title': 'Hymns',
+      'icon': Icons.music_note,
+      'route': '/hymnal',
+      'color': Colors.green
+    },
   ];
 
   Widget _buildFeatureCard(
@@ -489,7 +570,8 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: color?.withOpacity(0.1) ?? Theme.of(context).primaryColor.withOpacity(0.1),
+                color: color?.withOpacity(0.1) ??
+                    Theme.of(context).primaryColor.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -1107,7 +1189,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return CarouselSlider(
       options: CarouselOptions(
         height: 200,
-        aspectRatio: 16/9,
+        aspectRatio: 16 / 9,
         viewportFraction: 0.9,
         initialPage: 0,
         enableInfiniteScroll: true,
@@ -1212,9 +1294,9 @@ class _HomeScreenState extends State<HomeScreen> {
             const Center(
               child: CircularProgressIndicator(),
             )
-          else if (_errorMessage.isNotEmpty)
+          else if (_verseOfTheDay == null)
             Text(
-              _errorMessage,
+              'No verse available',
               style: TextStyle(
                 color: Theme.of(context).colorScheme.error,
               ),

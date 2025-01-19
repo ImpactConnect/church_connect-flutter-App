@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../models/sermon.dart';
 import '../../services/supabase_sermon_service.dart';
-import 'widgets/audio_player_sheet.dart';
 import 'sermon_player_screen.dart'; // Import the new player screen
 
 enum SermonViewType { all, favorites, downloads }
@@ -461,7 +460,7 @@ class _SermonsScreenState extends State<SermonsScreen>
 
   Widget _buildSermonListTile(Sermon sermon) {
     final formattedDate = DateFormat('MMM d, y').format(sermon.sermonDate);
-    
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ListTile(

@@ -33,7 +33,8 @@ class _CommunityScreenState extends State<CommunityScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
       _loadMorePosts();
     }
   }
@@ -132,7 +133,8 @@ class _CommunityScreenState extends State<CommunityScreen> {
                             post.isLikedByCurrentUser
                                 ? Icons.favorite
                                 : Icons.favorite_border,
-                            color: post.isLikedByCurrentUser ? Colors.red : null,
+                            color:
+                                post.isLikedByCurrentUser ? Colors.red : null,
                           ),
                           onPressed: () async {
                             try {
@@ -153,7 +155,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
                         ),
                         Text('${post.likesCount} likes'),
                         const SizedBox(width: 16),
-                        Icon(Icons.comment_outlined),
+                        const Icon(Icons.comment_outlined),
                         const SizedBox(width: 8),
                         Text('${post.commentsCount} comments'),
                       ],
