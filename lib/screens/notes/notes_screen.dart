@@ -3,6 +3,7 @@ import '../../models/note.dart';
 import '../../services/database/database_helper.dart';
 import 'note_editor_screen.dart';
 import 'note_preview_screen.dart';
+import 'package:intl/intl.dart';
 
 class NotesScreen extends StatefulWidget {
   const NotesScreen({super.key});
@@ -12,10 +13,11 @@ class NotesScreen extends StatefulWidget {
 }
 
 class _NotesScreenState extends State<NotesScreen> {
+  final _notesService = DatabaseHelper();
   List<Note> _notes = [];
+  List<Note> _filteredNotes = [];
   bool _isLoading = true;
   final _searchController = TextEditingController();
-  List<Note> _filteredNotes = [];
 
   @override
   void initState() {
@@ -23,140 +25,64 @@ class _NotesScreenState extends State<NotesScreen> {
     _loadNotes();
   }
 
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadNotes() async {
     setState(() => _isLoading = true);
     try {
-      final db = await DatabaseHelper().database;
-      final List<Map<String, dynamic>> maps = await db.query(
-        'Notes',
-        orderBy: 'updated_at DESC',
-      );
+      final notes = await _notesService.getNotes();
       setState(() {
-        _notes = maps.map((map) => Note.fromMap(map)).toList();
-        _filteredNotes = _notes;
+        _notes = notes;
+        _filteredNotes = notes;
         _isLoading = false;
       });
     } catch (e) {
-      debugPrint('Error loading notes: $e');
       setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _deleteNote(Note note) async {
-    try {
-      final db = await DatabaseHelper().database;
-      await db.delete(
-        'Notes',
-        where: 'id = ?',
-        whereArgs: [note.id],
-      );
-      _loadNotes();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Note deleted')),
-        );
-      }
-    } catch (e) {
-      debugPrint('Error deleting note: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error deleting note')),
-        );
-      }
+      // Handle error
     }
   }
 
   void _filterNotes(String query) {
     setState(() {
-      _filteredNotes = _notes
-          .where((note) =>
-              note.title.toLowerCase().contains(query.toLowerCase()) ||
-              note.content.toLowerCase().contains(query.toLowerCase()))
-          .toList();
+      if (query.isEmpty) {
+        _filteredNotes = _notes;
+      } else {
+        _filteredNotes = _notes
+            .where((note) =>
+                note.title.toLowerCase().contains(query.toLowerCase()) ||
+                note.content.toLowerCase().contains(query.toLowerCase()))
+            .toList();
+      }
     });
   }
 
-  void _addNewNote(BuildContext context) async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const NoteEditorScreen(),
-      ),
-    );
-    _loadNotes();
-  }
-
-  Future<void> _refreshNotes() async {
-    await _loadNotes();
-  }
-
-  Widget _buildNoteCard(Note note) {
-    return ListTile(
-      title: Text(
-        note.title,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      subtitle: Text(
-        note.content,
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => NoteEditorScreen(
-                    note: note,
-                  ),
-                ),
-              );
-              _loadNotes();
-            },
+  Future<void> _deleteNote(Note note) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Note'),
+        content: const Text('Are you sure you want to delete this note?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
           ),
-          IconButton(
-            icon: const Icon(Icons.delete),
-            onPressed: () => showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: const Text('Delete Note'),
-                content: const Text(
-                    'Are you sure you want to delete this note?'),
-                actions: [
-                  TextButton(
-                    child: const Text('Cancel'),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  TextButton(
-                    child: const Text('Delete'),
-                    onPressed: () {
-                      Navigator.pop(context);
-                      _deleteNote(note);
-                    },
-                  ),
-                ],
-              ),
-            ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete'),
           ),
         ],
       ),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => NotePreviewScreen(
-              note: note,
-              onNoteUpdated: _loadNotes,
-            ),
-          ),
-        );
-      },
     );
+
+    if (confirmed == true) {
+      await _notesService.deleteNote(note.id!);
+      _loadNotes();
+    }
   }
 
   @override
@@ -169,33 +95,8 @@ class _NotesScreenState extends State<NotesScreen> {
               floating: true,
               pinned: true,
               expandedHeight: 180,
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.add),
-                  onPressed: () => _addNewNote(context),
-                  tooltip: 'Add new note',
-                ),
-                IconButton(
-                  icon: const Icon(Icons.refresh),
-                  onPressed: _refreshNotes,
-                  tooltip: 'Refresh notes',
-                ),
-              ],
+              title: const Text('Notes'),
               flexibleSpace: FlexibleSpaceBar(
-                title: const Text(
-                  'Notes',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    shadows: [
-                      Shadow(
-                        offset: Offset(0, 1),
-                        blurRadius: 3.0,
-                        color: Color.fromARGB(255, 0, 0, 0),
-                      ),
-                    ],
-                  ),
-                ),
                 background: Stack(
                   fit: StackFit.expand,
                   children: [
@@ -223,7 +124,7 @@ class _NotesScreenState extends State<NotesScreen> {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            Colors.transparent,
+                            Colors.black.withOpacity(0.3),
                             Colors.black.withOpacity(0.7),
                           ],
                         ),
@@ -238,63 +139,191 @@ class _NotesScreenState extends State<NotesScreen> {
         body: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16),
               child: TextField(
                 controller: _searchController,
+                onChanged: _filterNotes,
                 decoration: InputDecoration(
                   hintText: 'Search notes...',
-                  prefixIcon: const Icon(Icons.search),
+                  filled: true,
+                  fillColor: Theme.of(context).cardColor,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide.none,
+                  ),
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            _searchController.clear();
+                            _filterNotes('');
+                          },
+                        )
+                      : null,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 15,
                   ),
                 ),
-                onChanged: _filterNotes,
               ),
             ),
             Expanded(
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : RefreshIndicator(
-                      onRefresh: _refreshNotes,
+                      onRefresh: _loadNotes,
                       child: _filteredNotes.isEmpty
-                          ? Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.note_alt_outlined,
-                                    size: 64,
-                                    color: Colors.grey[400],
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    _searchController.text.isEmpty
-                                        ? 'No notes yet'
-                                        : 'No notes match your search',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.grey[600],
+                          ? ListView(
+                              children: [
+                                SizedBox(
+                                  height: MediaQuery.of(context).size.height * 0.4,
+                                  child: Center(
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.note_outlined,
+                                          size: 64,
+                                          color: Colors.grey[400],
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          _searchController.text.isEmpty
+                                              ? 'No notes yet'
+                                              : 'No notes match your search',
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        if (_searchController.text.isEmpty)
+                                          Text(
+                                            'Tap the + button to create a new note',
+                                            style: TextStyle(
+                                              color: Colors.grey[600],
+                                            ),
+                                          ),
+                                      ],
                                     ),
                                   ),
-                                  if (_searchController.text.isEmpty)
-                                    TextButton(
-                                      onPressed: () => _addNewNote(context),
-                                      child: const Text('Create your first note'),
-                                    ),
-                                ],
-                              ),
+                                ),
+                              ],
                             )
                           : ListView.builder(
+                              padding: const EdgeInsets.all(16),
                               itemCount: _filteredNotes.length,
                               itemBuilder: (context, index) {
                                 final note = _filteredNotes[index];
-                                return _buildNoteCard(note);
+                                return Card(
+                                  margin: const EdgeInsets.only(bottom: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: InkWell(
+                                    onTap: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => NotePreviewScreen(
+                                          note: note,
+                                          onNoteUpdated: _loadNotes,
+                                        ),
+                                      ),
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  note.title,
+                                                  style: const TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.w700,
+                                                  ),
+                                                ),
+                                              ),
+                                              IconButton(
+                                                icon: const Icon(Icons.delete_outline),
+                                                onPressed: () => _deleteNote(note),
+                                                color: Colors.grey[600],
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            note.content.length > 50
+                                                ? '${note.content.substring(0, 50)}...'
+                                                : note.content,
+                                            style: TextStyle(
+                                              color: Colors.grey[600],
+                                              height: 1.5,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 12),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                DateFormat('MMM d, y')
+                                                    .format(note.createdAt),
+                                                style: TextStyle(
+                                                  color: Colors.grey[500],
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Text(
+                                                    'View Note',
+                                                    style: TextStyle(
+                                                      color: Theme.of(context)
+                                                          .primaryColor,
+                                                      fontWeight: FontWeight.w500,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 4),
+                                                  Icon(
+                                                    Icons.arrow_forward,
+                                                    size: 16,
+                                                    color:
+                                                        Theme.of(context).primaryColor,
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
                               },
                             ),
                     ),
             ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const NoteEditorScreen(),
+            ),
+          );
+          if (result == true) {
+            _loadNotes();
+          }
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }

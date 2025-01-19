@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import '../../models/note.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -105,5 +106,39 @@ class DatabaseHelper {
       // Add markdown_content column to existing Notes table
       await db.execute('ALTER TABLE Notes ADD COLUMN markdown_content TEXT');
     }
+  }
+
+  // Note Methods
+  Future<List<Note>> getNotes() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'Notes',
+      orderBy: 'updated_at DESC',
+    );
+    return List.generate(maps.length, (i) => Note.fromMap(maps[i]));
+  }
+
+  Future<int> insertNote(Note note) async {
+    final db = await database;
+    return await db.insert('Notes', note.toMap());
+  }
+
+  Future<int> updateNote(Note note) async {
+    final db = await database;
+    return await db.update(
+      'Notes',
+      note.toMap(),
+      where: 'id = ?',
+      whereArgs: [note.id],
+    );
+  }
+
+  Future<int> deleteNote(int id) async {
+    final db = await database;
+    return await db.delete(
+      'Notes',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 }

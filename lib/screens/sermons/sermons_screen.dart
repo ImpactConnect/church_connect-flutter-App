@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../models/sermon.dart';
 import '../../services/supabase_sermon_service.dart';
-import 'sermon_player_screen.dart'; // Import the new player screen
+import '../../services/download_service.dart';
+import 'sermon_player_screen.dart';
 
 enum SermonViewType { all, favorites, downloads }
 
@@ -427,7 +428,7 @@ class _SermonsScreenState extends State<SermonsScreen>
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
                         if (index < _sermons.length) {
-                          return _buildSermonListTile(_sermons[index]);
+                          return _buildSermonCard(_sermons[index]);
                         } else if (_hasMore) {
                           return _buildLoadingCard();
                         }
@@ -442,61 +443,202 @@ class _SermonsScreenState extends State<SermonsScreen>
     );
   }
 
-  void _playSermon(Sermon sermon) {
-    if (sermon.audioUrl == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Audio not available')),
-      );
-      return;
+  String _formatDuration(int? minutes) {
+    if (minutes == null) return '';
+    final hours = minutes ~/ 60;
+    final remainingMinutes = minutes % 60;
+    if (hours > 0) {
+      return '${hours}h ${remainingMinutes}m';
     }
+    return '${remainingMinutes}m';
+  }
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => SermonPlayerScreen(sermon: sermon),
+  Widget _buildSermonCard(Sermon sermon) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SermonPlayerScreen(sermon: sermon),
+          ),
+        ),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          sermon.title,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          sermon.preacher,
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert),
+                    onSelected: (value) async {
+                      if (value == 'download') {
+                        _downloadSermon(sermon);
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'download',
+                        child: Row(
+                          children: [
+                            Icon(Icons.download),
+                            SizedBox(width: 8),
+                            Text('Download'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    DateFormat('MMM d, y').format(sermon.sermonDate),
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 12,
+                    ),
+                  ),
+                  Text(
+                    _formatDuration(sermon.durationMinutes),
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+              if (sermon.tags.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: sermon.tags
+                      .take(3)
+                      .map(
+                        (topic) => Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).primaryColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            topic,
+                            style: TextStyle(
+                              color: Theme.of(context).primaryColor,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildSermonListTile(Sermon sermon) {
-    final formattedDate = DateFormat('MMM d, y').format(sermon.sermonDate);
-
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: ListTile(
-        leading: const Icon(Icons.play_circle_outline, size: 32),
-        title: Text(
-          sermon.title,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontWeight: FontWeight.w500),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              sermon.preacher,
-              style: const TextStyle(fontSize: 13),
-            ),
-            Text(
-              formattedDate,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
-            ),
-          ],
-        ),
-        trailing: IconButton(
-          icon: Icon(
-            sermon.isDownloaded ? Icons.download_done : Icons.download,
-            color: sermon.isDownloaded ? Colors.green : Colors.grey[400],
+  Future<void> _downloadSermon(Sermon sermon) async {
+    if (sermon.audioUrl == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No audio available for this sermon'),
+            duration: Duration(seconds: 2),
           ),
-          onPressed: () => _toggleDownload(sermon),
-        ),
-        onTap: () => _playSermon(sermon),
-      ),
-    );
+        );
+      }
+      return;
+    }
+
+    try {
+      final hasPermission = await DownloadService.checkStoragePermission();
+      if (!hasPermission) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Storage permission is required to download sermons'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+        return;
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Downloading sermon...'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+
+      final filePath = await DownloadService.downloadSermon(
+        sermon.audioUrl!,
+        sermon.title,
+      );
+
+      if (filePath != null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Sermon downloaded successfully'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to download sermon'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Error downloading sermon'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildLoadingCard() {

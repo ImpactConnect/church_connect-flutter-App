@@ -36,58 +36,33 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   Future<void> _saveNote() async {
     if (_titleController.text.isEmpty || _contentController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in all fields')),
+        const SnackBar(content: Text('Please enter both title and content')),
       );
       return;
     }
 
-    setState(() => _isLoading = true);
+    final note = Note(
+      title: _titleController.text,
+      content: _contentController.text,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+
     try {
-      final db = await DatabaseHelper().database;
-      final now = DateTime.now();
-      final content = _contentController.text;
-
-      if (widget.note == null) {
-        await db.insert(
-          'Notes',
-          {
-            'title': _titleController.text,
-            'content': content,
-            'markdown_content': content,
-            'created_at': now.toIso8601String(),
-            'updated_at': now.toIso8601String(),
-          },
-        );
-      } else {
-        await db.update(
-          'Notes',
-          {
-            'title': _titleController.text,
-            'content': content,
-            'markdown_content': content,
-            'updated_at': now.toIso8601String(),
-          },
-          where: 'id = ?',
-          whereArgs: [widget.note!.id],
-        );
-      }
-
-      setState(() => _lastSaved = now);
-
+      await DatabaseHelper().insertNote(note);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Note saved')),
+          const SnackBar(content: Text('Note saved successfully')),
         );
+        Navigator.pop(context, true); // Return true to indicate success
       }
     } catch (e) {
-      debugPrint('Error saving note: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Error saving note')),
         );
       }
     }
-    setState(() => _isLoading = false);
   }
 
   void _shareNote() {
@@ -246,24 +221,30 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                           decoration: const InputDecoration(
-                            hintText: 'Title',
+                            hintText: 'Note Title',
+                            hintStyle: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
                             border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        const Divider(height: 1),
                         Expanded(
                           child: TextField(
                             controller: _contentController,
+                            maxLines: null,
                             style: const TextStyle(
                               fontSize: 16,
                               height: 1.5,
                             ),
                             decoration: const InputDecoration(
-                              hintText: 'Start writing...',
+                              hintText: 'Start typing...',
                               border: InputBorder.none,
+                              contentPadding: EdgeInsets.all(16),
                             ),
-                            maxLines: null,
-                            keyboardType: TextInputType.multiline,
                           ),
                         ),
                       ],

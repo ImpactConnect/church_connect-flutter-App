@@ -10,7 +10,8 @@ class HymnalScreen extends StatefulWidget {
   State<HymnalScreen> createState() => _HymnalScreenState();
 }
 
-class _HymnalScreenState extends State<HymnalScreen> with SingleTickerProviderStateMixin {
+class _HymnalScreenState extends State<HymnalScreen>
+    with SingleTickerProviderStateMixin {
   late HymnService _hymnService;
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
@@ -102,20 +103,20 @@ class _HymnalScreenState extends State<HymnalScreen> with SingleTickerProviderSt
                 ),
               ],
               flexibleSpace: FlexibleSpaceBar(
-                title: const Text(
-                  'Hymnal',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    shadows: [
-                      Shadow(
-                        offset: Offset(0, 1),
-                        blurRadius: 3.0,
-                        color: Color.fromARGB(255, 0, 0, 0),
-                      ),
-                    ],
-                  ),
-                ),
+                // title: const Text(
+                //   '',
+                //   style: TextStyle(
+                //     color: Colors.white,
+                //     fontWeight: FontWeight.bold,
+                //     shadows: [
+                //       Shadow(
+                //         offset: Offset(0, 1),
+                //         blurRadius: 3.0,
+                //         color: Color.fromARGB(255, 0, 0, 0),
+                //       ),
+                //     ],
+                //   ),
+                // ),
                 background: Stack(
                   fit: StackFit.expand,
                   children: [
@@ -226,9 +227,8 @@ class _HymnalScreenState extends State<HymnalScreen> with SingleTickerProviderSt
       return const Center(child: CircularProgressIndicator());
     }
 
-    final bookmarkedHymns = _hymns
-        .where((hymn) => _bookmarkedHymns.contains(hymn.number))
-        .toList();
+    final bookmarkedHymns =
+        _hymns.where((hymn) => _bookmarkedHymns.contains(hymn.number)).toList();
 
     if (bookmarkedHymns.isEmpty) {
       return const Center(

@@ -84,8 +84,6 @@ class NotePreviewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateFormat = DateFormat('MMM d, yyyy • h:mm a');
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -119,21 +117,42 @@ class NotePreviewScreen extends StatelessWidget {
           children: [
             Text(
               note.title,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
-            Text(
-              'Last edited ${dateFormat.format(note.updatedAt)}',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            Row(
+              children: [
+                Text(
+                  'Created ${DateFormat('MMM d, y').format(note.createdAt)}',
+                  style: TextStyle(
                     color: Colors.grey[600],
+                    fontSize: 12,
                   ),
+                ),
+                if (note.updatedAt != note.createdAt) ...[
+                  const SizedBox(width: 16),
+                  Text(
+                    'Edited ${DateFormat('MMM d, y').format(note.updatedAt)}',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
+            const Divider(),
+            const SizedBox(height: 16),
             MarkdownBody(
               data: note.markdownContent ?? note.content,
               selectable: true,
+              styleSheet: MarkdownStyleSheet(
+                p: const TextStyle(fontSize: 16, height: 1.5),
+              ),
             ),
           ],
         ),

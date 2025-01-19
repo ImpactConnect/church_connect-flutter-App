@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase_sermon_service.dart';
 import '../models/sermon.dart';
-import 'give/give_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
