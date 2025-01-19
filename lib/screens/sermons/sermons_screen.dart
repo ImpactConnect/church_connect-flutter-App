@@ -616,9 +616,20 @@ class _SermonsScreenState extends State<SermonsScreen>
 
       if (filePath != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Sermon downloaded successfully'),
-            duration: Duration(seconds: 2),
+          SnackBar(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Sermon downloaded successfully'),
+                const SizedBox(height: 4),
+                Text(
+                  'Saved to: $filePath',
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ],
+            ),
+            duration: const Duration(seconds: 4),
           ),
         );
       } else if (mounted) {
