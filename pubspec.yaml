@@ -36,6 +36,8 @@ dependencies:
   fluttertoast: ^8.2.4
   permission_handler: ^11.0.1
   http: ^1.1.0
+  flutter_pdfview: ^1.3.2
+  syncfusion_flutter_pdfviewer: ^23.2.7
 
 dev_dependencies:
   flutter_test:
@@ -50,3 +52,4 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/data/
+    - assets/images/library_bg.jpg

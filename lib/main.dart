@@ -19,6 +19,7 @@ import 'screens/blog/blog_list_screen.dart';
 import 'screens/give/give_screen.dart';
 import 'screens/devotional/devotional_screen.dart';
 import 'screens/hymnal/hymnal_screen.dart';
+import 'screens/ebooks/ebooks_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -76,6 +77,7 @@ class MyApp extends StatelessWidget {
               _buildComingSoonScreen('Connect Groups'),
           '/testimonies': (context) => _buildComingSoonScreen('Testimonies'),
           '/prayer-wall': (context) => _buildComingSoonScreen('Prayer Wall'),
+          '/ebooks': (context) => const EbooksScreen(),
         },
       ),
     );

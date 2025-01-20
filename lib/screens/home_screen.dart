@@ -426,23 +426,26 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildFeatureSection(List<Map<String, dynamic>> features) {
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      crossAxisCount: 4,
-      childAspectRatio: 0.85,
-      mainAxisSpacing: 16,
-      crossAxisSpacing: 16,
-      children: features
-          .map((feature) => _buildFeatureCard(
-                context,
-                feature['title'],
-                feature['icon'],
-                () => Navigator.pushNamed(context, feature['route']),
-                color: feature['color'],
-              ))
-          .toList(),
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: GridView.count(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        crossAxisCount: 4,
+        childAspectRatio: 1.0,
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 16,
+        children: features
+            .map((feature) => _buildFeatureCard(
+                  context,
+                  feature['title'],
+                  feature['icon'],
+                  () => Navigator.pushNamed(context, feature['route']),
+                  color: feature['color'],
+                ))
+            .toList(),
+      ),
     );
   }
 
@@ -519,6 +522,12 @@ class _HomeScreenState extends State<HomeScreen> {
       'route': '/testimonies',
       'color': Colors.pink
     },
+    {
+      'title': 'Ebooks',
+      'icon': Icons.book_online,
+      'route': '/ebooks',
+      'color': Colors.teal
+    },
   ];
 
   final List<Map<String, dynamic>> _engagementFeatures = [
@@ -565,6 +574,7 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(15),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               padding: const EdgeInsets.all(8),
@@ -575,21 +585,24 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               child: Icon(
                 icon,
-                size: 24,
+                size: 20, // Reduced icon size
                 color: color ?? Theme.of(context).primaryColor,
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey[800],
+            const SizedBox(height: 4), // Reduced spacing
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 10, // Reduced font size
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey[800],
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -840,7 +853,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildUpcomingEvents() {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
-      height: 180,
+      height: 200, // Increased height to accommodate content
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -903,7 +916,7 @@ class _HomeScreenState extends State<HomeScreen> {
   ) {
     return Container(
       width: 160,
-      margin: const EdgeInsets.only(right: 12),
+      margin: const EdgeInsets.only(right: 12, bottom: 8), // Added bottom margin
       child: Card(
         elevation: 2,
         shape: RoundedRectangleBorder(
@@ -915,6 +928,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
+              mainAxisSize: MainAxisSize.min, // Added to prevent expansion
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
@@ -923,15 +937,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: color.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(icon, color: color),
+                  child: Icon(icon, color: color, size: 24), // Adjusted icon size
                 ),
                 const SizedBox(height: 12),
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 14, // Reduced font size
                     fontWeight: FontWeight.bold,
                   ),
+                  maxLines: 1, // Limit to one line
+                  overflow: TextOverflow.ellipsis, // Handle overflow text
                 ),
                 const SizedBox(height: 4),
                 Row(
